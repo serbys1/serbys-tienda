@@ -363,12 +363,11 @@
             }
         });
     </script>
-    <!-- CÓDIGO PARA LEER LOS PRODUCTOS DE GOOGLE EN AUDIO -->
+   <!-- CÓDIGO PARA LEER LOS PRODUCTOS DE GOOGLE EN AUDIO CORREGIDO -->
 <script type="module">
     import { initializeApp } from "https://gstatic.com";
     import { getFirestore, collection, query, where, orderBy, onSnapshot } from "https://gstatic.com";
 
-    // Tus credenciales reales en la nube
     const firebaseConfig = {
         apiKey: "AIzaSyCK3ydBkB_Y3fctSsGLizEQtlYBUaUo8U",
         authDomain: "://firebaseapp.com",
@@ -381,25 +380,30 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Filtra para que en esta pestaña solo salgan los productos de la categoría "audio"
     const q = query(collection(db, "productos"), where("categoria", "==", "audio"), orderBy("fecha", "desc"));
     
     onSnapshot(q, (snapshot) => {
-        const productosAudio = [];
+        const productosReales = [];
         snapshot.forEach((doc) => {
-            productosAudio.push({ id: doc.id, ...doc.data() });
+            productosReales.push({ id: doc.id, ...doc.data() });
         });
         
-        // Conecta con tu función que dibuja las tarjetas en pantalla
-        if (window.renderizarProductos) {
-            window.renderizarProductos(productosAudio);
-        } else if (typeof mostrarProductos === 'function') {
-            mostrarProductos(productosAudio);
+        // CONEXIÓN DIRECTA CON TU SISTEMA DE PAGINACIÓN DE PANTALLA
+        if (typeof productos !== 'undefined') {
+            window.productos = productosReales;
         } else {
-            window.productosTienda = productosAudio;
+            window.productosTienda = productosReales;
+        }
+
+        // Si tu código usa una función base para arrancar el catálogo, la despertamos aquí
+        if (typeof cargarProductos === 'function') {
+            cargarProductos();
+        } else if (typeof renderizarProductos === 'function') {
+            renderizarProductos(productosReales);
         }
     });
 </script>
+
 
 </body>
 </html>
