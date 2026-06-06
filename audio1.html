@@ -259,11 +259,11 @@ if (prod.imagenes && prod.imagenes.length > 0) {
                         <div class="producto-img-container">
                             <a href="detalles.html?id=${prod.id}">
                                 
-                                <img src="${fotoPortada}" alt="${prod.nombre}">
+                                <img src="${fotoPortada}" alt="${prod.titulo}">
 
                             </a>
                         </div>
-                        <h3>${prod.nombre}</h3>
+                        <h3>${prod.titulo}</h3>
                         <p class="precio">$${parseFloat(prod.precio).toFixed(2)}</p>
                         <a href="detalles.html?id=${prod.id}" class="btn-ver-detalles">Ver Detalles</a>
                     </div>
