@@ -246,8 +246,9 @@
             contenedor.innerHTML = "";
             productosVisibles.forEach(prod => {
                 let fotoPortada = 'https://placehold.co';
-                if (prod.todasLasFotos && prod.todasLasFotos.length > 0) {
-                    fotoPortada = prod.todasLasFotos;
+                if (prod.imagenes && prod.imagenes.length > 0) {
+                    fotoPortada = prod.imagenes[0];
+
                 }
                 
                 contenedor.innerHTML += `
