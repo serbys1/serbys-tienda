@@ -234,9 +234,10 @@ function cargarProductosRopa() {
     const productosVisibles = productosRopa.slice(indiceInicio, indiceFin);
     const totalPaginas = Math.ceil(productosRopa.length / productosPorPagina);
     
-    contenedor.innerHTML = "";
-    productosVisibles.forEach(prod => {
-      let fotoPortada = 'https://placeholder.co';
+   // Renderizamos solo los 20 de esta página
+            contenedor.innerHTML = "";
+            productosVisibles.forEach(prod => {
+               let fotoPortada = 'https://placeholder.co';
 if (prod.imagenes && prod.imagenes.length > 0) {
     const indiceAleatorio = Math.floor(Math.random() * prod.imagenes.length);
     fotoPortada = prod.imagenes[indiceAleatorio];
@@ -245,6 +246,7 @@ if (prod.imagenes && prod.imagenes.length > 0) {
 } else if (prod.todasLasFotos && prod.todasLasFotos.length > 0) {
     fotoPortada = prod.todasLasFotos[0];
 }
+        
         contenedor.innerHTML += `
             <div class="producto">
                 <div class="producto-img-container">
