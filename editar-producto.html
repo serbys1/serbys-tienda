@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script>
+    // ESTE BLOQUE CORRE ANTES DE QUE SE CARGUE LA PÁGINA
+    (function() {
+        const claveCorrecta = "Kellyusa2026"; // <-- CAMBIA ESTO por la contraseña que tú quieras
+        const sesionActiva = sessionStorage.getItem("admin_autenticado");
+
+        if (sesionActiva !== "true") {
+            const intentoClave = prompt("Acceso Restringido. Introduce la contraseña de administrador para ingresar:");
+            
+            if (intentoClave === claveCorrecta) {
+                // Si la clave es correcta, se guarda el permiso solo por esta sesión
+                sessionStorage.setItem("admin_autenticado", "true");
+            } else {
+                alert("Contraseña incorrecta. Acceso denegado.");
+                // Redirige al intruso de vuelta al inicio de la tienda
+                window.location.href = "index.html";
+            }
+        }
+    })();
+</script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOW-COST | Editar Producto</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; color: #333; }
+        .navbar { background-color: #fcd116; padding: 15px 0; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .logo-text { font-size: 24px; font-weight: bold; color: #003399; text-decoration: none; display: block; }
+        .container { max-width: 500px; margin: 30px auto; padding: 30px; background: white; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        h2 { margin-top: 0; color: #003399; text-align: center; }
+        .grupo { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; }
+        input, textarea, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 14px; }
+        textarea { height: 80px; resize: none; }
+        .btn-guardar { background: #007bff; color: white; border: none; padding: 12px; width: 100%; font-weight: bold; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        .btn-guardar:hover { background: #0056b3; }
+        .btn-cancelar { background: #666; color: white; text-decoration: none; display: block; text-align: center; padding: 10px; border-radius: 5px; font-weight: bold; font-size: 14px; margin-top: 10px; }
+        .mensaje { display: none; background: #d4edda; color: #155724; padding: 10px; border-radius: 5px; text-align: center; margin-bottom: 15px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <header class="navbar">
+        <a href="index.html" class="logo-text">LOW-COST ® - PANEL DE EDICIÓN</a>
+    </header>
+
+    <div class="container">
+        <h2>✏️ Editar Datos del Artículo</h2>
+        <div id="mensaje-exito" class="mensaje">¡Cambios guardados con éxito!</div>
+        
+        <form id="formulario-editar">
+            <div class="grupo">
+                <label>Categoría:</label>
+                <select id="categoria" required>
+                    <option value="audio">Audio</option>
+                    <option value="ropa">Ropa</option>
+                    <option value="muebles">Muebles</option>
+                    <option value="suministros">Suministros</option>
+                    <option value="games">Games</option>
+                    <option value="disco">Disco</option>
+                </select>
+            </div>
+
+            <div class="grupo">
+                <label>Título del Producto:</label>
+                <input type="text" id="titulo" required>
+            </div>
+            <div class="grupo">
+                <label>Precio ($):</label>
+                <input type="number" id="precio" step="0.01" required>
+            </div>
+            <div class="grupo">
+                <label>Descripción:</label>
+                <textarea id="descripcion" required></textarea>
+            </div>
+            <div class="grupo">
+                <label>Especificaciones Técnicas:</label>
+                <textarea id="especificaciones" required></textarea>
+            </div>
+            
+            <button type="submit" class="btn-guardar">Guardar Cambios Corregidos</button>
+            <a href="administrar.html" class="btn-cancelar">Cancelar y Volver</a>
+        </form>
+    </div>
+
+    <script>
+        let idProductoEditar = null;
+        let listaProductos = [];
+
+        // Leer los datos actuales automáticamente al abrir la página
+        window.onload = function() {
+            const parametros = new URLSearchParams(window.location.search);
+            idProductoEditar = parseInt(parametros.get('id'));
+            
+            listaProductos = JSON.parse(localStorage.getItem('mis_productos')) || [];
+            const prod = listaProductos.find(p => p.id === idProductoEditar);
+            
+            if (prod) {
+                document.getElementById('categoria').value = prod.categoria;
+                document.getElementById('titulo').value = prod.titulo;
+                document.getElementById('precio').value = prod.precio;
+                document.getElementById('descripcion').value = prod.descripcion;
+                document.getElementById('especificaciones').value = prod.especificaciones || "";
+            } else {
+                alert("Producto no encontrado.");
+                window.location.href = "administrar.html";
+            }
+        };
+
+        // Guardar las correcciones sin alterar las imágenes originales
+        document.getElementById('formulario-editar').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            listaProductos = listaProductos.map(prod => {
+                if (prod.id === idProductoEditar) {
+                    return {
+                        ...prod, // Mantiene las fotos intactas que ya tenías subidas
+                        categoria: document.getElementById('categoria').value,
+                        titulo: document.getElementById('titulo').value,
+                        precio: document.getElementById('precio').value,
+                        descripcion: document.getElementById('descripcion').value,
+                        especificaciones: document.getElementById('especificaciones').value
+                    };
+                }
+                return prod;
+            });
+            
+            localStorage.setItem('mis_productos', JSON.stringify(listaProductos));
+            document.getElementById('mensaje-exito').style.display = 'block';
+            
+            setTimeout(() => {
+                window.location.href = "administrar.html"; // Te regresa al inventario solo
+            }, 1500);
+        });
+    </script>
+</body>
+</html>

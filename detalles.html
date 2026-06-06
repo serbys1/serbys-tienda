@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SERBYS | Detalle</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f9f9f9; color: #333; }
+        .barra-amarilla-superior { background-color: #ffcc00; padding: 15px 0; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 100%; }
+        .logo-contenedor { display: block; text-align: center; margin-bottom: 10px; }
+        .imagen-del-logo { width: 250px; height: auto; object-fit: contain; display: inline-block; }
+        nav { display: flex; justify-content: center; align-items: center; gap: 14px; margin-top: 15px; }
+        nav a { color: #333333; text-decoration: none; font-size: 13px; }
+        nav a:hover { color: #f7f8f8 !important; }
+        .container-principal { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
+        .container-detalle { padding: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; gap: 40px; }
+        .galeria-detalle { flex: 1; display: flex; flex-direction: column; gap: 15px; }
+        .foto-principal-detalle { width: 100%; height: 380px; display: flex; align-items: center; justify-content: center; border: 1px solid #e0e0e0; border-radius: 6px; overflow: hidden; background: #fff; }
+        .foto-principal-detalle img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .miniaturas-contenedor { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .miniaturas-contenedor img { width: 70px; height: 70px; object-fit: cover; border: 2px solid #e0e0e0; border-radius: 4px; cursor: pointer; }
+        .miniaturas-contenedor img.activa { border-color: #004d80; }
+        .tabla-especificaciones { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
+        .tabla-especificaciones th { text-align: left; background-color: #003399; color: white; padding: 10px 12px; border-radius: 4px 4px 0 0; }
+        .tabla-especificaciones td { padding: 10px 12px; border-bottom: 1px solid #eee; }
+        .tabla-especificaciones td.titulo-campo { font-weight: bold; color: #555; width: 35%; background-color: #fcfcfc; }
+        .info-detalle { flex: 1; display: flex; flex-direction: column; }
+        .info-detalle h1 { font-size: 28px; margin: 0 0 10px 0; color: #111; text-transform: capitalize; }
+        .precio-detalle { font-size: 32px; font-weight: bold; color: #003399; margin: 10px 0; }
+                /* CANDADO GLOBAL: OBLIGA A LA DESCRIPCIÓN A BAJAR EN CUALQUIER PANTALLA */
+        .descripcion-detalle {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #000000;
+            margin-top: 20px;
+            white-space: pre-line !important;
+            word-wrap: break-word !important;  /* Rompe palabras infinitas */
+            word-break: break-word !important; /* Mantiene el quiebre limpio */
+            max-width: 100% !important;        /* No permite que se estire la caja */
+            box-sizing: border-box;
+        
+        }
+
+        .bloque-relacionados { margin-top: 50px; border-top: 2px solid #eee; padding-top: 30px; }
+        .bloque-relacionados h2 { font-size: 20px; color: #111; margin-bottom: 20px; font-weight: bold; text-transform: uppercase; }
+        .grid-relacionados { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
+        .tarjeta-sugerida { background: white; border: 1px solid #e0e0e0; border-radius: 6px; padding: 10px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; text-decoration: none; color: inherit; }
+        .sugerido-img-container { width: 100%; height: 110px; display: flex; align-items: center; justify-content: center; background-color: #f5f5f5; border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
+        .sugerido-img-container img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .tarjeta-sugerida h3 { font-size: 13px; margin: 5px 0; color: #333; height: 32px; overflow: hidden; line-height: 1.2; text-align: left; }
+        .tarjeta-sugerida .precio-sugerido { font-size: 15px; font-weight: bold; color: #003399; text-align: left; }
+        
+                  /* CONTENEDOR DERECHO: CON BASE DE POSICIÓN */
+        .info-detalle { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: flex-start; 
+            align-items: flex-start; 
+            position: relative; /* Clave para poder mover el cuadro a la esquina */
+            min-height: 250px;
+        }
+        
+        /* TU BOTÓN COMPACTO ORIGINAL GRANDE */
+        .btn-comprar-detalle { 
+            background: #000000; 
+            color: white; 
+            border: none; 
+            padding: 12px 25px; 
+            font-size: 12px; 
+            font-weight: bold; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            display: inline-block; 
+            text-decoration: none; 
+            text-transform: uppercase; 
+            margin-top: 15px;
+        }
+        .btn-comprar-detalle:hover { background: #222222; }
+
+       
+
+        /* 📱 ADAPTADOR AUTOMÁTICO PARA CELULARES */
+        @media (max-width: 768px) {
+            /* Hace que las fotos y los textos se pongan uno debajo de otro */
+            .container-detalle {
+                flex-direction: column !important;
+                gap: 20px !important;
+                padding: 10px !important;
+            }
+            /* Ajusta la galería de imágenes al ancho del teléfono */
+            .galeria-detalle {
+                width: 100% !important;
+            }
+            .foto-principal-detalle {
+                height: 280px !important; /* Fotos un poco más bajas para que quepan bien */
+            }
+            /* Quita el choque de las dos columnas de texto */
+            .info-detalle {
+                width: 100% !important;
+                position: relative !important;
+                min-height: auto !important;
+                gap: 15px !important;
+            }
+            /* Mueve el cuadrito de condición abajo del botón en el celular */
+            .cuadro-condiciones-pequeno {
+                position: relative !important;
+                top: auto !important;
+                right: auto !important;
+                width: 100% !important; /* Ocupa todo el ancho en el teléfono */
+                margin-top: 15px !important;
+            }
+            /* Hace que tu botón negro ocupe todo el ancho para que sea fácil de aplastar con el dedo */
+            .btn-comprar-detalle {
+                width: 100% !important;
+            }
+
+                       /* ALINEACIÓN INMUTABLE PARA EL CELULAR */
+            .info-detalle {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: flex-start !important; /* Centra o alinea todo al inicio */
+                width: 100% !important;
+                gap: 15px !important;
+            }
+            .bloque-izq-datos {
+                display: flex !important;
+                flex-direction: column !important;
+                width: 100% !important;
+                gap: 12px !important;
+            }
+            /* FORZAMOS A QUE AMBOS BOTONES SE VEAN GRANDES Y COMODOS EN EL CELULAR */
+            .btn-comprar-detalle, 
+            .btn-payphone-detalle {
+                width: 30% !important;
+                display: block !important;
+                text-align: center !important;
+                box-sizing: border-box !important;
+            }
+
+                        /* HACE QUE EL MENÚ EN EL CELULAR SE ACOMODE EN DOS FILAS SIN SALIRSE */
+            nav {
+                flex-wrap: wrap !important;
+                gap: 12px 16px !important; /* Espacio limpio entre los botones */
+                padding: 0 10px !important;
+                justify-content: center !important;
+            }
+            nav a {
+                font-size: 13px !important; /* Letra un poquito más cómoda para que quepan mejor */
+            }
+
+        
+        }
+
+                /* BOTÓN OFICIAL DE PAYPHONE */
+        .btn-payphone-detalle {
+            background-color: #00b2a9 !important; /* Verde oficial Payphone */
+            color: #ffffff !important;
+            border: none;
+            padding: 8px 24px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            display: block;
+            text-align: center;
+            transition: background 0.2s;
+            text-decoration: none !important;
+            text-transform: uppercase;
+            width: 110px; /* Mismo ancho elegante que tu botón negro */
+            box-sizing: border-box;
+            margin-top: 10px; /* Pequeña separación del botón negro */
+        }
+        .btn-payphone-detalle:hover {
+            background-color: #00938c !important;
+        }
+
+        
+        /* ↩️ BOTÓN ENLACE VOLVER ATRÁS */
+        .enlace-volver-atras {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #007185; /* Azul clásico de enlaces tipo Amazon */
+            font-size: 14px;
+            text-decoration: none;
+            cursor: pointer;
+            margin-bottom: 15px; /* Separa el botón del título */
+            font-weight: bold;
+            transition: color 0.2s;
+        }
+        .enlace-volver-atras:hover {
+            color: #C7511F; /* Cambia a naranja al pasar el mouse */
+            text-decoration: underline;
+        }
+
+         /* 🔍 BARRA DE BÚSQUEDA INTELIGENTE */
+        .contenedor-buscador {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin: 15px auto 0 auto;
+        }
+        .input-buscador {
+            width: 100%;
+            padding: 10px 40px 10px 15px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 25px;
+            outline: none;
+            box-sizing: border-box;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .input-buscador:focus {
+            border-color: #003399;
+            box-shadow: 0 0 5px rgba(0,51,153,0.2);
+        }
+        
+        /* CAJA DE RESULTADOS FLOTANTE */
+        .resultados-buscador {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-top: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+        }
+        .item-resultado {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            text-decoration: none;
+            color: #333;
+            border-bottom: 1px solid #f5f5f5;
+            transition: background 0.2s;
+        }
+        .item-resultado:hover {
+            background-color: #f0f4f8;
+        }
+        .item-resultado:last-child {
+            border-bottom: none;
+        }
+        .item-resultado img {
+            width: 45px;
+            height: 45px;
+            object-fit: contain;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+        .item-resultado .info-res {
+            flex: 1;
+            text-align: left;
+        }
+        .item-resultado .info-res h4 {
+            margin: 0;
+            font-size: 13px;
+            color: #111;
+            text-transform: capitalize;
+        }
+        .item-resultado .info-res p {
+            margin: 2px 0 0 0;
+            font-size: 12px;
+            font-weight: bold;
+            color: #003399;
+        }
+        .sin-resultados {
+            padding: 15px;
+            color: gray;
+            font-size: 13px;
+            text-align: center;
+        }
+
+                /* 🛡️ BLOQUE DE ICONOS DE CONFIANZA ABAJO DE MINIATURAS */
+        .bloque-beneficios-galeria {
+            margin-top: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+        .item-beneficio {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+            color: #4a5568;
+            text-align: left;
+        }
+        .item-beneficio .icono-svg {
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .item-beneficio strong {
+            color: #1a202c;
+        }
+
+    </style>
+
+    <style>
+.btn-facebook-flotante {
+  position: fixed!important;
+  bottom: 20px!important;
+  right: 20px!important; /* Lado izquierdo, WhatsApp está a la derecha */
+  background: #1877F2!important; /* Azul Facebook */
+  width: 60px!important;
+  height: 60px!important;
+  border-radius: 25%!important;
+  display: flex!important;
+  align-items: center!important;
+  justify-content: center!important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3)!important;
+  z-index: 9999!important;
+  transition: all 0.3s!important;
+}
+.btn-facebook-flotante:hover {
+  transform: scale(1.1)!important;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.4)!important;
+}
+@media (max-width: 768px) {
+  .btn-facebook-flotante {
+    width: 55px!important;
+    height: 55px!important;
+    bottom: 15px!important;
+    right: 15px!important;
+  }
+}
+/* --- SOLUCIÓN DE DUPLICADOS EN PC Y MÓVIL --- */
+
+/* 1. En la computadora: oculta por la fuerza el cuadro de abajo */
+.d-block.d-md-none {
+    display: none !important;
+}
+
+/* 2. En el celular: oculta el de arriba y muestra el de abajo */
+@media (max-width: 768px) {
+    .d-none.d-md-block {
+        display: none !important;
+    }
+    .d-block.d-md-none {
+        display: block !important;
+    }
+}
+
+</style>
+<!-- FIN BOTÓN FACEBOOK -->
+</head>
+<body>
+    <header class="barra-amarilla-superior">
+        <a href="index.html" class="logo-contenedor"><img src="serbis1.jpg" alt="SERBYS" class="imagen-del-logo"></a>
+         <!-- 🔍 NUEVO ELEMENTO: BARRA DE BÚSQUEDA INTERACTIVA -->
+        <div class="contenedor-buscador">
+            <input type="text" id="input-buscar-tienda" class="input-buscador" placeholder="Buscar Productos Usados y Nuevos...">
+            <div id="caja-resultados-tienda" class="resultados-buscador"></div>
+        </div>
+        <nav>
+            <a href="index.html" style="color: #3f3d3d;">INICIO</a> <span class="separador">|</span>
+            <a href="audio1.html">AUDIO</a> <span class="separador">|</span>
+            <a href="ropa.html">ROPA</a> <span class="separador">|</span>
+            <a href="muebles.html">MUEBLES</a> <span class="separador">|</span>
+            <a href="suministros.html">SUMINISTROS</a> <span class="separador">|</span>
+            <a href="game.html">GAMES</a> <span class="separador">|</span>
+            <a href="disco.html">DISCO</a>
+        </nav>
+    </header>
+    <div class="container-principal">
+        <div class="container-detalle" id="contenido-cargar"></div>
+        <div class="bloque-relacionados" id="seccion-sugeridos" style="display: none;">
+            <h2>Artículos relacionados sugeridos</h2>
+            <div class="grid-relacionados" id="contenedor-sugeridos"></div>
+        </div>
+    </div>
+    <script>
+        
+        function cargarDetalleProducto() {
+            const parametros = new URLSearchParams(window.location.search);
+            const idProducto = parseInt(parametros.get('id'));
+            const lista = JSON.parse(localStorage.getItem('mis_productos')) || [];
+            const prod = lista.find(p => p.id === idProducto);
+            const contenedor = document.getElementById('contenido-cargar');
+            if (!prod) { contenedor.innerHTML = "<p style='text-align:center;width:100%;padding:40px;color:gray;'>El artículo no existe.</p>"; return; }
+            const fotoInicial = prod.todasLasFotos && prod.todasLasFotos.length > 0 ? prod.todasLasFotos[0] : 'https://placehold.co';
+            let htmlMiniaturas = "";
+            if(prod.todasLasFotos && prod.todasLasFotos.length > 0) {
+                prod.todasLasFotos.forEach((foto, idx) => {
+                    htmlMiniaturas += `<img src="${foto}" class="${idx===0?'activa':''}" onclick="cambiarFotoPrincipal(this)">`;
+                });
+            }
+            const textoMensaje = encodeURIComponent(`¡Hola serbys.com! Me interesa comprar el producto: *${prod.titulo}* con un precio de *$${parseFloat(prod.precio).toFixed(2)}*. ¿Sigue disponible?`);
+            const enlaceWhatsApp = `https://wa.me/593980372540?text=${textoMensaje}`;
+            let filasTabla = "";
+            if (prod.especificaciones && prod.especificaciones.trim() !== "") {
+                prod.especificaciones.split('\n').forEach(linea => {
+                    if (linea.includes(':')) {
+                        const idx = linea.indexOf(':');
+                        filasTabla += `<tr><td class="titulo-campo">${linea.substring(0,idx).trim()}</td><td>${linea.substring(idx+1).trim()}</td></tr>`;
+                    } else if (linea.trim() !== "") {
+                        filasTabla += `<tr><td class="titulo-campo">Nota:</td><td>${linea.trim()}</td></tr>`;
+                    }
+                });
+            } else { filasTabla = `<tr><td colspan="2" style="color:gray;text-align:center;padding:15px;">Sin especificaciones.</td></tr>`; }
+                        contenedor.innerHTML = `
+                              <div class="galeria-detalle">
+                    <div class="foto-principal-detalle">
+                        <img id="visor-principal" src="${fotoInicial}">
+                    </div>
+                    <div class="miniaturas-contenedor">${htmlMiniaturas}</div>
+                
+                
+                <!-- 🚚 EL CUADRO DE ICONOS QUEDA EN SU PROPIO PISO AQUÍ ABAJO -->
+                    <div class="bloque-beneficios-galeria d-none d-md-block" style="display: var(--display-pc, block);">
+                        <div class="item-beneficio">
+                            <span class="icono-svg"><img src="envio2.jpg"></span>
+                            <div><strong>Envíos Garantizados:</strong> Entrega segura a todo el Ecuador.</div>
+                        </div>
+                        <div class="item-beneficio">
+                            <span class="icono-svg"><img src="comprasegura.png"></span>
+                            <div><strong>Compra 100% Segura:</strong> Artículo verificado, revisado y probado físicamente.</div>
+                        </div>
+                        <div class="item-beneficio">
+                            <span class="icono-svg"><img src="mastervisa.png"></span>
+                            <div><strong>Formas de Pago:</strong> Efectivo, transferencia o tarjeta de crédito/devito.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="info-detalle">
+                    <div class="bloque-izq-datos">
+                    <!-- BOTÓN VOLVER ATRÁS INTELIGENTE -->
+                        <a onclick="history.back()" class="enlace-volver-atras"><img src="botonatras1.png"></a>
+                        <h1>${prod.titulo}</h1>
+                        <p class="precio-detalle">$${parseFloat(prod.precio).toFixed(2)}</p>
+                        <a href="${enlaceWhatsApp}" target="_blank" class="btn-comprar-detalle">Comprar</a>
+                        <a href="https://ppls.me/xwU2WPa7oDRoOllwtXg" target="_blank" class="btn-payphone-detalle"><img src="visa1.png"> <img src="mastercar1l.png"></a>
+                        <p class="descripcion-detalle">${prod.descripcion}</p>
+                    </div>
+                    
+                 
+                    
+                    <table class="tabla-especificaciones" style="width: 100%; margin-top: 30px;">
+                        <thead><tr><th colspan="2">Descripción del Producto</th></tr></thead>
+                        <tbody>${filasTabla}</tbody>
+                    </table>
+                            <!-- CUADRO DE ICONOS EXCLUSIVO PARA CELULAR -->
+        <div class="bloque-beneficios-galeria d-block d-md-none mt-4" style="display: var(--display-movil, block);">
+            <div class="item-beneficio">
+                <span><img src="envio2.jpg"></span>
+                <div><strong>Envíos Garantizados:</strong> Entrega segura a todo el Ecuador.</div>
+            </div>
+            <div class="item-beneficio">
+                <span><img src="comprasegura.png"></span>
+                <div><strong>Compra 100% Segura:</strong> Artículo verificado, revisado y probado físicamente.</div>
+            </div>
+            <div class="item-beneficio">
+                <span><img src="mastervisa.png"></span>
+                <div><strong>Formas de Pago:</strong> Efectivo, transferencia o tarjeta de crédito/débito.</div>
+            </div>
+        </div>
+
+                </div>
+
+               
+                
+            `;
+
+            const contenedorSugeridos = document.getElementById('contenedor-sugeridos');
+            const bloqueSugeridos = document.getElementById('seccion-sugeridos');
+            let relacionados = lista.filter(p => p.categoria === prod.categoria && p.id !== prod.id);
+            if (relacionados.length > 0) {
+                relacionados.sort(() => Math.random() - 0.6);
+                bloqueSugeridos.style.display = 'block';
+                contenedorSugeridos.innerHTML = "";
+                relacionados.slice(0, 10).forEach(item => {
+                    const foto = item.todasLasFotos && item.todasLasFotos.length > 0 ? item.todasLasFotos[0] : 'https://placehold.co';
+                    contenedorSugeridos.innerHTML += `<a href="detalles.html?id=${item.id}" class="tarjeta-sugerida"><div class="sugerido-img-container"><img src="${foto}"></div><h3>${item.titulo}</h3><p class="precio-sugerido">$${parseFloat(item.precio).toFixed(2)}</p></a>`;
+                });
+            }
+        }
+        function cambiarFotoPrincipal(el) {
+            document.getElementById('visor-principal').src = el.src;
+            document.querySelectorAll('.miniaturas-contenedor img').forEach(img => img.classList.remove('activa'));
+            el.classList.add('activa');
+        }
+        window.onload = cargarDetalleProducto;
+    </script>
+    <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; font-size: 13px; font-weight: normal;">
+        <a href="info.html?sec=logistica" style="color: #004d80; text-decoration: none;">Logística</a>
+        <span style="color: #004d80; user-select: none;">|</span>
+        <a href="info.html?sec=ubicacion" style="color: #004d80; text-decoration: none;">Ubicación</a>
+        <span style="color: #004d80; user-select: none;">|</span>
+        <a href="info.html?sec=pago" style="color: #004d80; text-decoration: none;">Método de Pago</a>
+        <span style="color: #004d80; user-select: none;">|</span>
+        <a href="info.html?sec=contactos" style="color: #004d80; text-decoration: none;">Contactos</a>
+        <span style="color: #004d80; user-select: none;">|</span>
+        <a href="info.html?sec=politicas" style="color: #004d80; text-decoration: none;">Políticas</a>
+    </div>
+
+    <!-- BOTÓN FLOTANTE DE FACEBOOK -->
+<a aria-label='Síguenos en Facebook' class='btn-facebook-flotante' href='https://www.facebook.com/share/1CT1kd1YEk/' target='_blank'>
+  <svg fill='white' height='28' viewBox='0 0 24 24' width='28'>
+    <path d='M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z'/>
+  </svg>
+</a>
+
+  
+
+<script>
+        // MOTOR DEL BUSCADOR EN TIEMPO REAL
+        document.getElementById('input-buscar-tienda').addEventListener('input', function(e) {
+            const texto = e.target.value.toLowerCase().trim();
+            const cajaResultados = document.getElementById('caja-resultados-tienda');
+            const listaProductos = JSON.parse(localStorage.getItem('mis_productos')) || [];
+
+            // Si el buscador está vacío, escondemos la caja flotante y paramos
+            if (texto === "") {
+                cajaResultados.style.display = "none";
+                cajaResultados.innerHTML = "";
+                return;
+            }
+
+            // Filtramos los productos que coincidan en título o descripción
+            const filtrados = listaProductos.filter(p => 
+                p.titulo.toLowerCase().includes(texto) || 
+                (p.descripcion && p.descripcion.toLowerCase().includes(texto))
+            );
+
+            cajaResultados.innerHTML = "";
+            cajaResultados.style.display = "block";
+
+            if (filtrados.length === 0) {
+                cajaResultados.innerHTML = `<div class="sin-resultados"> No encontramos "${e.target.value}"</div>`;
+                return;
+            }
+
+            // Dibujamos los primeros 5 resultados sugeridos con su foto y enlace directo
+            filtrados.slice(0, 5).forEach(prod => {
+                let foto = 'https://placehold.co';
+                if (prod.todasLasFotos && prod.todasLasFotos.length > 0) {
+                    foto = prod.todasLasFotos;
+                }
+
+                cajaResultados.innerHTML += `
+                    <a href="detalles.html?id=${prod.id}" class="item-resultado">
+                        <img src="${foto}" alt="${prod.titulo}">
+                        <div class="info-res">
+                            <h4>${prod.titulo}</h4>
+                            <p>$${parseFloat(prod.precio).toFixed(2)}</p>
+                        </div>
+                    </a>
+                `;
+            });
+        });
+
+        // Oculta la caja si el usuario hace clic en cualquier otra parte de la pantalla
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.contenedor-buscador')) {
+                document.getElementById('caja-resultados-tienda').style.display = "none";
+            }
+        });
+    </script>
+</body>
+</html>

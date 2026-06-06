@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SERBYS | Disco</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f9f9f9; color: #333; }
+        
+         /* BARRA SUPERIOR IDÉNTICA AL INICIO */
+        .navbar { background-color: #ffcc00; padding: 15px 0; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 100%; margin: 0; }
+        .logo-contenedor { display: block; text-align: center; }
+        .imagen-del-logo { width: 250px; height: auto; object-fit: contain; display: inline-block; }
+        
+               nav { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            gap: 24px; 
+            margin-top: 15px; 
+            width: 100%;
+        }
+        nav a { 
+            color: #333333; 
+            text-decoration: none; 
+            font-weight: normal; 
+            font-size: 14px; 
+            display: inline-block;
+            transition: color 0.1s ease;
+        }
+        nav a:hover { 
+            color: #ffffff !important; 
+        }
+
+
+        /* Contenedor del Catálogo de Productos */
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        .titulo-seccion { font-size: 28px; color: #222; border-bottom: 3px solid #ffcc00; padding-bottom: 10px; margin-bottom: 30px; }
+        
+        /* Cuadrícula compacta estilo Marketplace */
+        .catalogo { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; justify-content: center; }
+        .producto { background: white; border: 1px solid #e0e0e0; border-radius: 6px; padding: 12px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; }
+        .producto-img-container { width: 100%; height: 140px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; overflow: hidden; background-color: #f5f5f5; border-radius: 4px; }
+        .producto img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        
+        .producto h3 { font-size: 15px; margin: 8px 0; color: #111; height: 36px; overflow: hidden; line-height: 1.2; text-align: left; }
+        .precio { font-size: 17px; font-weight: bold; color: #003399; margin: 5px 0; text-align: left; }
+        
+        .btn-ver-detalles { background: #003399; color: white; border: none; padding: 10px; width: 100%; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 13px; margin-top: 5px; text-decoration: none; display: block; box-sizing: border-box; }
+        .btn-ver-detalles:hover { background: #002266; }
+
+          .info-detalle {
+                display: flex !important;
+                flex-direction: column !important;
+                width: 100% !important;
+                gap: 12px !important;
+            }
+            .columna-izquierda-precio {
+                display: flex !important;
+                flex-direction: column !important;
+                width: 100% !important;
+                order: 1 !important; /* Fuerza a que los textos vayan juntos en orden */
+            }
+            .descripcion-detalle {
+                margin-top: 10px !important;
+                order: 4 !important; /* Manda la descripción abajo del botón */
+            }
+            .btn-comprar-detalle {
+                order: 3 !important; /* Pone el botón comprar justo debajo del precio */
+                width: 100% !important;
+            }
+            .cuadro-condiciones-pequeno {
+                order: 5 !important; /* Manda el cuadrito de condición al puro final */
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+
+                        /* HACE QUE EL MENÚ EN EL CELULAR SE ACOMODE EN DOS FILAS SIN SALIRSE */
+            nav {
+                flex-wrap: wrap !important;
+                gap: 12px 16px !important; /* Espacio limpio entre los botones */
+                padding: 0 10px !important;
+                justify-content: center !important;
+            }
+            nav a {
+                font-size: 13px !important; /* Letra un poquito más cómoda para que quepan mejor */
+            }
+
+            /* 🔍 BARRA DE BÚSQUEDA INTELIGENTE */
+        .contenedor-buscador {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin: 15px auto 0 auto;
+        }
+        .input-buscador {
+            width: 100%;
+            padding: 10px 40px 10px 15px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 25px;
+            outline: none;
+            box-sizing: border-box;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .input-buscador:focus {
+            border-color: #003399;
+            box-shadow: 0 0 5px rgba(0,51,153,0.2);
+        }
+        
+        /* CAJA DE RESULTADOS FLOTANTE */
+        .resultados-buscador {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-top: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+        }
+        .item-resultado {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            text-decoration: none;
+            color: #333;
+            border-bottom: 1px solid #f5f5f5;
+            transition: background 0.2s;
+        }
+        .item-resultado:hover {
+            background-color: #f0f4f8;
+        }
+        .item-resultado:last-child {
+            border-bottom: none;
+        }
+        .item-resultado img {
+            width: 45px;
+            height: 45px;
+            object-fit: contain;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+        .item-resultado .info-res {
+            flex: 1;
+            text-align: left;
+        }
+        .item-resultado .info-res h4 {
+            margin: 0;
+            font-size: 13px;
+            color: #111;
+            text-transform: capitalize;
+        }
+        .item-resultado .info-res p {
+            margin: 2px 0 0 0;
+            font-size: 12px;
+            font-weight: bold;
+            color: #003399;
+        }
+        .sin-resultados {
+            padding: 15px;
+            color: gray;
+            font-size: 13px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="navbar">
+        <a href="index.html" class="logo-contenedor">
+            <img src="serbis1.jpg" alt="SERBYS" class="imagen-del-logo">
+        </a>
+        <!-- 🔍 NUEVO ELEMENTO: BARRA DE BÚSQUEDA INTERACTIVA -->
+        <div class="contenedor-buscador">
+            <input type="text" id="input-buscar-tienda" class="input-buscador" placeholder="Buscar Productos Usados y Nuevos...">
+            <div id="caja-resultados-tienda" class="resultados-buscador"></div>
+        </div>
+        <nav>
+            <a href="index.html" style="color: #3f3d3d;">INICIO</a> <span class="separador">|</span>
+            <a href="audio1.html">AUDIO</a> <span class="separador">|</span>
+            <a href="ropa.html">ROPA</a> <span class="separador">|</span>
+            <a href="muebles.html">MUEBLES</a> <span class="separador">|</span>
+            <a href="suministros.html">SUMINISTROS</a> <span class="separador">|</span>
+            <a href="game.html">GAMES</a> <span class="separador">|</span>
+            <a href="disco.html">DISCO</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h1 class="titulo-seccion">Discos, Música y Coleccionables</h1>
+        <div class="catalogo" id="contenedor-catalogo"></div>
+    </div>
+
+    <script>
+        let paginaActual = parseInt(sessionStorage.getItem('pagina_guardada_disco')) || 1;
+        const productosPorPagina = 12;
+
+        function cargarProductosDisco() {
+            const contenedor = document.getElementById('contenedor-catalogo');
+            const lista = JSON.parse(localStorage.getItem('mis_productos')) || [];
+            
+            let productosDisco = lista.filter(p => p.categoria === 'disco');
+            
+            let listaGuardadaSesion = sessionStorage.getItem('orden_aleatorio_disco');
+            if (listaGuardadaSesion) {
+                let idsOrdenados = JSON.parse(listaGuardadaSesion);
+                productosDisco.sort((a, b) => idsOrdenados.indexOf(a.id) - idsOrdenados.indexOf(b.id));
+            } else {
+                productosDisco.sort(() => Math.random() - 0.5);
+                let idsParaGuardar = productosDisco.map(p => p.id);
+                sessionStorage.setItem('orden_aleatorio_disco', JSON.stringify(idsParaGuardar));
+            }
+            
+            if(productosDisco.length === 0) {
+                contenedor.innerHTML = "<p style='grid-column: 1/-1; text-align: center; color: #666;'>No hay productos disponibles por ahora.</p>";
+                const paginacionVieja = document.getElementById('control-paginacion');
+                if (paginacionVieja) paginacionVieja.remove();
+                return;
+            }
+            
+            const indiceInicio = (paginaActual - 1) * productosPorPagina;
+            const indiceFin = indiceInicio + productosPorPagina;
+            const productosVisibles = productosDisco.slice(indiceInicio, indiceFin);
+            const totalPaginas = Math.ceil(productosDisco.length / productosPorPagina);
+            
+            contenedor.innerHTML = "";
+            productosVisibles.forEach(prod => {
+                let fotoPortada = 'https://placehold.co';
+                if (prod.todasLasFotos && prod.todasLasFotos.length > 0) {
+                    fotoPortada = prod.todasLasFotos;
+                }
+                
+                contenedor.innerHTML += `
+                    <div class="producto">
+                        <div class="producto-img-container">
+                            <a href="detalles.html?id=${prod.id}">
+                                <img src="${fotoPortada}" alt="${prod.titulo}">
+                            </a>
+                        </div>
+                        <h3>${prod.titulo}</h3>
+                        <p class="precio">$${parseFloat(prod.precio).toFixed(2)}</p>
+                        <a href="detalles.html?id=${prod.id}" class="btn-ver-detalles">Ver Detalles</a>
+                    </div>
+                `;
+            });
+            
+            renderizarBotonesPaginacion(totalPaginas);
+        }
+
+        function renderizarBotonesPaginacion(totalPaginas) {
+            let paginacionContenedor = document.getElementById('control-paginacion');
+            if (!paginacionContenedor) {
+                paginacionContenedor = document.createElement('div');
+                paginacionContenedor.id = 'control-paginacion';
+                paginacionContenedor.style.cssText = "display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 40px; margin-bottom: 20px; width: 100%; grid-column: 1 / -1;";
+                document.getElementById('contenedor-catalogo').after(paginacionContenedor);
+            }
+            paginacionContenedor.innerHTML = `
+                <button onclick="cambiarPagina(-1)" ${paginaActual === 1 ? 'disabled' : ''} style="background: #003399; color: white; border: none; padding: 10px 20px; font-weight: bold; border-radius: 4px; cursor: pointer; opacity: ${paginaActual === 1 ? '0.5' : '1'}">Anterior</button>
+                <span style="font-weight: bold; font-size: 16px; color: #333;">Página ${paginaActual} de ${totalPaginas}</span>
+                <button onclick="cambiarPagina(1)" ${paginaActual === totalPaginas ? 'disabled' : ''} style="background: #003399; color: white; border: none; padding: 10px 20px; font-weight: bold; border-radius: 4px; cursor: pointer; opacity: ${paginaActual === totalPaginas ? '0.5' : '1'}">Siguiente</button>
+            `;
+        }
+
+         function cambiarPagina(direccion) {
+    paginaActual += direccion;
+    sessionStorage.setItem('pagina_guardada_audio', paginaActual); // CAMBIADO AQUÍ
+    cargarProductos();
+    // Sube la pantalla al inicio automáticamente al cambiar de página
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+        window.onload = cargarProductosDisco;
+    </script>
+
+ <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; font-size: 13px; font-weight: normal;">
+        <a href="info.html?sec=logistica" style="color: #004d80; text-decoration: none;">Logística</a>
+        <span style="color: #004d80; user-select: none;">|</span>
+        <a href="info.html?sec=ubicacion" style="color: #004d80; text-decoration: none;">Ubicación</a>
+        <span style="color: #004d80; user-select: none;">|</span>
+        <a href="info.html?sec=pago" style="color: #004d80; text-decoration: none;">Método de Pago</a>
+        <span style="color: #004d80; user-select: none;">|</span>
+        <a href="info.html?sec=contactos" style="color: #004d80; text-decoration: none;">Contactos</a>
+        <span style="color: #004d80; user-select: none;">|</span>
+        <a href="info.html?sec=politicas" style="color: #004d80; text-decoration: none;">Políticas</a>
+    </div>
+
+    <script>
+        // MOTOR DEL BUSCADOR EN TIEMPO REAL
+        document.getElementById('input-buscar-tienda').addEventListener('input', function(e) {
+            const texto = e.target.value.toLowerCase().trim();
+            const cajaResultados = document.getElementById('caja-resultados-tienda');
+            const listaProductos = JSON.parse(localStorage.getItem('mis_productos')) || [];
+
+            // Si el buscador está vacío, escondemos la caja flotante y paramos
+            if (texto === "") {
+                cajaResultados.style.display = "none";
+                cajaResultados.innerHTML = "";
+                return;
+            }
+
+            // Filtramos los productos que coincidan en título o descripción
+            const filtrados = listaProductos.filter(p => 
+                p.titulo.toLowerCase().includes(texto) || 
+                (p.descripcion && p.descripcion.toLowerCase().includes(texto))
+            );
+
+            cajaResultados.innerHTML = "";
+            cajaResultados.style.display = "block";
+
+            if (filtrados.length === 0) {
+                cajaResultados.innerHTML = `<div class="sin-resultados"> No encontramos "${e.target.value}"</div>`;
+                return;
+            }
+
+            // Dibujamos los primeros 5 resultados sugeridos con su foto y enlace directo
+            filtrados.slice(0, 5).forEach(prod => {
+                let foto = 'https://placehold.co';
+                if (prod.todasLasFotos && prod.todasLasFotos.length > 0) {
+                    foto = prod.todasLasFotos;
+                }
+
+                cajaResultados.innerHTML += `
+                    <a href="detalles.html?id=${prod.id}" class="item-resultado">
+                        <img src="${foto}" alt="${prod.titulo}">
+                        <div class="info-res">
+                            <h4>${prod.titulo}</h4>
+                            <p>$${parseFloat(prod.precio).toFixed(2)}</p>
+                        </div>
+                    </a>
+                `;
+            });
+        });
+
+        // Oculta la caja si el usuario hace clic en cualquier otra parte de la pantalla
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.contenedor-buscador')) {
+                document.getElementById('caja-resultados-tienda').style.display = "none";
+            }
+        });
+    </script>
+</body>
+</html>

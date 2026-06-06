@@ -1,0 +1,21 @@
+/* Color de fondo azul para el menú de arriba */
+header {
+    background-color: #0099df;
+    padding: 15px;
+    text-align: center;
+    font-family: Arial, sans-serif;
+}
+
+/* Estilo para las pestañas (letras blancas y separadas) */
+nav a {
+    color: white;
+    text-decoration: none; /* Quita la línea de abajo */
+    font-weight: bold;
+    margin: 0 15px;
+    font-size: 14px;
+}
+
+/* Cambia de color cuando pasas el ratón encima */
+nav a:hover {
+    color: #e6e6e6;
+}

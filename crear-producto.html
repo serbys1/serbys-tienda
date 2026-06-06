@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script>
+    // ESTE BLOQUE CORRE ANTES DE QUE SE CARGUE LA PÁGINA
+    (function() {
+        const claveCorrecta = "Kellyusa2026"; // <-- CAMBIA ESTO por la contraseña que tú quieras
+        const sesionActiva = sessionStorage.getItem("admin_autenticado");
+
+        if (sesionActiva !== "true") {
+            const intentoClave = prompt("Acceso Restringido. Introduce la contraseña de administrador para ingresar:");
+            
+            if (intentoClave === claveCorrecta) {
+                // Si la clave es correcta, se guarda el permiso solo por esta sesión
+                sessionStorage.setItem("admin_autenticado", "true");
+            } else {
+                alert("Contraseña incorrecta. Acceso denegado.");
+                // Redirige al intruso de vuelta al inicio de la tienda
+                window.location.href = "index.html";
+            }
+        }
+    })();
+</script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOW-COST | Publicar Producto</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; color: #333; }
+        .navbar { background-color: #fcd116; padding: 15px 0; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .logo-text { font-size: 24px; font-weight: bold; color: #003399; text-decoration: none; display: block; }
+        .container { max-width: 500px; margin: 30px auto; padding: 30px; background: white; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        h2 { margin-top: 0; color: #003399; text-align: center; }
+        .grupo { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; }
+        input, textarea, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 14px; }
+        textarea { height: 80px; resize: none; }
+        input[type="file"] { padding: 5px; background: #fff; }
+        .btn-publicar { background: #003399; color: white; border: none; padding: 12px; width: 100%; font-weight: bold; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        .btn-publicar:hover { background: #002266; }
+        .mensaje { display: none; background: #d4edda; color: #155724; padding: 10px; border-radius: 5px; text-align: center; margin-bottom: 15px; font-weight: bold; }
+        .previsualizacion { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+        .previsualizacion img { width: 75px; height: 75px; object-fit: cover; border: 1px solid #ddd; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+    <header class="navbar">
+        <a href="index.html" class="logo-text">LOW-COST ® - PANEL INTEGRAL</a>
+    </header>
+
+    <div class="container">
+        <h2>Publicar Artículo</h2>
+        <div id="mensaje-exito" class="mensaje">¡Producto publicado con éxito!</div>
+        
+        <form id="formulario-producto">
+            <div class="grupo">
+                <label>Categoría:</label>
+                <select id="categoria" required>
+                    <option value="audio">Audio</option>
+                    <option value="ropa">Ropa</option>
+                    <option value="muebles">Muebles</option>
+                    <option value="suministros">Suministros</option>
+                    <option value="games">Games</option>
+                    <option value="disco">Disco</option>
+                </select>
+            </div>
+            
+            <div class="grupo">
+                <label>Selecciona las fotos desde tu PC (Máximo 5):</label>
+                <input type="file" id="fotos-archivos" accept="image/*" multiple required>
+                <div class="previsualizacion" id="vista-previa"></div>
+            </div>
+
+            <div class="grupo">
+                <label>Título del Producto:</label>
+                <input type="text" id="titulo" placeholder="Ej: Parlante Sansui" required>
+            </div>
+            <div class="grupo">
+                <label>Precio ($):</label>
+                <input type="number" id="precio" step="0.01" placeholder="Ej: 120.00" required>
+            </div>
+            <div class="grupo">
+                <label>Descripción:</label>
+                <textarea id="descripcion" placeholder="Detalles del producto..." required></textarea>
+            </div>
+            <div class="grupo">
+                <label>Especificaciones Técnicas:</label>
+                <textarea id="especificaciones" placeholder="Marca: Sony&#10;Estado: Usado" required></textarea>
+            </div>
+            <button type="submit" class="btn-publicar">Publicar Artículo</button>
+        </form>
+    </div>
+
+    <script>
+        const inputArchivos = document.getElementById('fotos-archivos');
+        const vistaPrevia = document.getElementById('vista-previa');
+        let imagenesBase64 = [];
+
+        inputArchivos.addEventListener('change', function() {
+            vistaPrevia.innerHTML = "";
+            imagenesBase64 = [];
+            const archivos = Array.from(inputArchivos.files).slice(0, 5);
+            
+            archivos.forEach(archivo => {
+                const lector = new FileReader();
+                lector.onload = function(e) {
+                    const imgOriginal = new Image();
+                    imgOriginal.src = e.target.result;
+                    imgOriginal.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        
+                        // Compresión óptima para que no pese en la memoria
+                        const MAX_ANCHO = 400;
+                        let ancho = imgOriginal.width;
+                        let alto = imgOriginal.height;
+                        
+                        if (ancho > MAX_ANCHO) {
+                            alto *= MAX_ANCHO / ancho;
+                            ancho = MAX_ANCHO;
+                        }
+                        
+                        canvas.width = ancho;
+                        canvas.height = alto;
+                        ctx.drawImage(imgOriginal, 0, 0, ancho, alto);
+                        
+                        const fotoOptimizada = canvas.toDataURL('image/jpeg', 0.5);
+                        imagenesBase64.push(fotoOptimizada);
+                        
+                        const imgPreview = document.createElement('img');
+                        imgPreview.src = fotoOptimizada;
+                        vistaPrevia.appendChild(imgPreview);
+                    }
+                }
+                lector.readAsDataURL(archivo);
+            });
+        });
+
+        document.getElementById('formulario-producto').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if(imagenesBase64.length === 0) { alert("Por favor selecciona una imagen."); return; }
+
+            const nuevoProducto = {
+                id: Date.now(),
+                categoria: document.getElementById('categoria').value,
+                todasLasFotos: imagenesBase64,
+                titulo: document.getElementById('titulo').value,
+                precio: document.getElementById('precio').value,
+                descripcion: document.getElementById('descripcion').value,
+                especificaciones: document.getElementById('especificaciones').value
+            };
+            
+            try {
+                let listaProductos = JSON.parse(localStorage.getItem('mis_productos')) || [];
+                listaProductos.push(nuevoProducto);
+                localStorage.setItem('mis_productos', JSON.stringify(listaProductos));
+                
+                document.getElementById('mensaje-exito').style.display = 'block';
+                document.getElementById('formulario-producto').reset();
+                vistaPrevia.innerHTML = "";
+                imagenesBase64 = [];
+                setTimeout(() => { document.getElementById('mensaje-exito').style.display = 'none'; }, 3000);
+            } catch (error) {
+                alert("La memoria del navegador está llena. Borra productos viejos desde administrar.html para liberar espacio.");
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SERBYS | Inicio</title>
+    <style>
+        /* Estilos Base para eliminar el marco blanco de la pantalla */
+        body { font-family: Arial, sans-serif; margin: 0 !important; padding: 0 !important; background-color: #f9f9f9; color: #333; }
+        
+         /* BARRA SUPERIOR IDÉNTICA AL INICIO */
+        .navbar { background-color: #ffcc00; padding: 15px 0; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 100%; margin: 0; }
+        .logo-contenedor { display: block; text-align: center; }
+        .imagen-del-logo { width: 250px; height: auto; object-fit: contain; display: inline-block; }
+        
+               nav { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            gap: 24px; 
+            margin-top: 15px; 
+            width: 100%;
+        }
+        nav a { 
+            color: #333333; 
+            text-decoration: none; 
+            font-weight: normal; 
+            font-size: 14px; 
+            display: inline-block;
+            transition: color 0.1s ease;
+        }
+        nav a:hover { 
+            color: #fcfeff !important; 
+        }
+
+        /* Contenedor de Tarjetas del Inicio */
+        .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+        
+        /* Cuadrícula de categorías principales */
+        .categorias-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; justify-content: center; }
+        
+        /* Tarjeta blanca de categoría */
+        .tarjeta-categoria { background: white; border: 8px solid #e0e0e0; border-radius: 8px; padding: 20px; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.05); transition: transform 0.2s, box-shadow 0.2s; text-decoration: none; color: inherit; display: flex; flex-direction: column; justify-content: space-between; height: 220px; }
+        .tarjeta-categoria:hover { transform: translateY(-5px); box-shadow: 0 6px 12px rgba(0,0,0,0.1); }
+        
+        .cat-img-container { width: 100%; height: 150px; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; overflow: hidden; background-color: #fcfcfc; border-radius: 6px; }
+        .cat-img-container img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        
+        .tarjeta-categoria h2 { font-size: 18px; color: #111; margin: 10px 0 5px 0; text-transform: uppercase; }
+        .tarjeta-categoria p { font-size: 13px; color: #666; margin: 0; line-height: 1.4; }
+
+                /* NUEVO: CUADRÍCULA DE ARTÍCULOS VARIADOS EN EL INICIO */
+        .bloque-variado-inicio { margin-top: 40px; text-align: left; }
+        .bloque-variado-inicio h2 { font-size: 20px; color: #111; margin-bottom: 20px; font-weight: bold; text-transform: uppercase; border-bottom: 2px solid #ffcc00; padding-bottom: 8px; }
+        .grid-variado { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; justify-content: center; }
+        
+        .tarjeta-variada { background: white; border: 1px solid #e0e0e0; border-radius: 6px; padding: 12px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; text-decoration: none; color: inherit; transition: transform 0.2s; }
+        .tarjeta-variada:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.08); }
+        
+        .variado-img-container { width: 100%; height: 130px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; overflow: hidden; background-color: #f5f5f5; border-radius: 4px; }
+        .variado-img-container img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        
+        .tarjeta-variada h3 { font-size: 14px; margin: 8px 0; color: #111; height: 36px; overflow: hidden; line-height: 1.2; text-align: left; font-weight: normal; }
+        .tarjeta-variada .precio-variado { font-size: 16px; font-weight: bold; color: #003399; text-align: left; margin: 5px 0 0 0; }
+        .tarjeta-variada .tag-categoria { font-size: 10px; color: white; background-color: #004d80; padding: 2px 6px; border-radius: 3px; width: fit-content; text-transform: uppercase; margin-bottom: 5px; font-weight: bold; }
+
+ .info-detalle {
+                display: flex !important;
+                flex-direction: column !important;
+                width: 100% !important;
+                gap: 12px !important;
+            }
+            .columna-izquierda-precio {
+                display: flex !important;
+                flex-direction: column !important;
+                width: 100% !important;
+                order: 1 !important; /* Fuerza a que los textos vayan juntos en orden */
+            }
+            .descripcion-detalle {
+                margin-top: 10px !important;
+                order: 4 !important; /* Manda la descripción abajo del botón */
+            }
+            .btn-comprar-detalle {
+                order: 3 !important; /* Pone el botón comprar justo debajo del precio */
+                width: 100% !important;
+            }
+            .cuadro-condiciones-pequeno {
+                order: 5 !important; /* Manda el cuadrito de condición al puro final */
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+
+                        /* HACE QUE EL MENÚ EN EL CELULAR SE ACOMODE EN DOS FILAS SIN SALIRSE */
+            nav {
+                flex-wrap: wrap !important;
+                gap: 12px 16px !important; /* Espacio limpio entre los botones */
+                padding: 0 10px !important;
+                justify-content: center !important;
+            }
+            nav a {
+                font-size: 13px !important; /* Letra un poquito más cómoda para que quepan mejor */
+            }
+
+             /* 🔍 BARRA DE BÚSQUEDA INTELIGENTE */
+        .contenedor-buscador {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin: 15px auto 0 auto;
+        }
+        .input-buscador {
+            width: 100%;
+            padding: 10px 40px 10px 15px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 25px;
+            outline: none;
+            box-sizing: border-box;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .input-buscador:focus {
+            border-color: #003399;
+            box-shadow: 0 0 5px rgba(0,51,153,0.2);
+        }
+        
+        /* CAJA DE RESULTADOS FLOTANTE */
+        .resultados-buscador {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-top: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+        }
+        .item-resultado {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            text-decoration: none;
+            color: #333;
+            border-bottom: 1px solid #f5f5f5;
+            transition: background 0.2s;
+        }
+        .item-resultado:hover {
+            background-color: #f0f4f8;
+        }
+        .item-resultado:last-child {
+            border-bottom: none;
+        }
+        .item-resultado img {
+            width: 45px;
+            height: 45px;
+            object-fit: contain;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+        .item-resultado .info-res {
+            flex: 1;
+            text-align: left;
+        }
+        .item-resultado .info-res h4 {
+            margin: 0;
+            font-size: 13px;
+            color: #111;
+            text-transform: capitalize;
+        }
+        .item-resultado .info-res p {
+            margin: 2px 0 0 0;
+            font-size: 12px;
+            font-weight: bold;
+            color: #003399;
+        }
+        .sin-resultados {
+            padding: 15px;
+            color: gray;
+            font-size: 13px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Barra Superior Sincronizada con Audio -->
+    <header class="navbar">
+        <a href="index.html" class="logo-contenedor">
+            <img src="serbis1.jpg" alt="SERBYS" class="imagen-del-logo">
+        </a>
+        <!-- 🔍 NUEVO ELEMENTO: BARRA DE BÚSQUEDA INTERACTIVA -->
+        <div class="contenedor-buscador">
+            <input type="text" id="input-buscar-tienda" class="input-buscador" placeholder="Buscar Productos Usados y Nuevos...">
+            <div id="caja-resultados-tienda" class="resultados-buscador"></div>
+        </div>
+        <nav>
+            <a href="index.html" style="color: #3f3d3d;">INICIO</a> <span class="separador">|</span>
+            <a href="audio1.html">AUDIO</a> <span class="separador">|</span>
+            <a href="ropa.html">ROPA</a> <span class="separador">|</span>
+            <a href="muebles.html">MUEBLES</a> <span class="separador">|</span>
+            <a href="suministros.html">SUMINISTROS</a> <span class="separador">|</span>
+            <a href="game.html">GAMES</a> <span class="separador">|</span>
+            <a href="disco.html">DISCO</a>
+        </nav>
+    </header>
+
+    <!-- Contenido del Home con tus imágenes reales -->
+    <div class="container">
+        <div class="categorias-grid">
+          
+            <!-- Tarjeta 1 -->
+            <div class="tarjeta-categoria">
+                <div class="cat-img-container">
+                    <img src="serbis3.png" alt="LOW-COST">
+                </div>
+                <div>
+                    <h2>Reúsa. Ahorra. Disfruta.</h2>
+                    <p>Probado físicamente. Tu compra es 100% segura.</p>
+                </div>
+            </div>
+
+            <!-- Tarjeta 2: COMPLETAMENTE FIJA Y TOTALMENTE LIMPIA -->
+            <div class="tarjeta-categoria">
+                <div class="cat-img-container">
+                    <img src="ImagenAUDIO.png" alt="Audio">
+                </div>
+                <div>
+                    <h2>AUDIO Y RELACIONADOS</h2>
+                    <p>Parlantes, amplificadores, radios, audífonos modernos.</p>
+                </div>
+            </div>
+
+            <!-- Tarjeta 3 -->
+            <div class="tarjeta-categoria">
+                <div class="cat-img-container">
+                    <img src="ImagenROPA.jpg" alt="Ropa y Muebles">
+                </div>
+                <div>
+                    <h2>ROPA Y MUEBLES</h2>
+                    <p>Ropa de marca, chompas, zapatos, maletas de viaje.</p>
+                </div>
+            </div>
+
+            <!-- Tarjeta 4 -->
+            <div class="tarjeta-categoria">
+                <div class="cat-img-container">
+                    <img src="ImagenHERRAMIENTAS.png" alt="Suministros">
+                </div>
+                <div>
+                    <h2>SUMINISTROS Y HERR.</h2>
+                    <p>Taladros, pulidoras, cables, bicicletas y más.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+        <!-- Contenedor dinámico para los artículos sugeridos del inicio -->
+    <div class="container" id="seccion-aleatoria-inicio" style="display: none; margin-top: 20px;">
+        <div class="bloque-variado-inicio">
+            <h2>Artículos destacados del día</h2>
+            <div class="grid-variado" id="contenedor-aleatorio-principal"></div>
+        </div>
+    </div>
+
+    <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; font-size: 13px; font-weight: normal;">
+        <a href="info.html?sec=logistica" style="color: #004d80; text-decoration: none;">Logística</a>
+        <span style="color: #004d80; user-select: none;">|</span>
+        <a href="info.html?sec=ubicacion" style="color: #004d80; text-decoration: none;">Ubicación</a>
+        <span style="color: #004d80; user-select: none;">|</span>
+        <a href="info.html?sec=pago" style="color: #004d80; text-decoration: none;">Método de Pago</a>
+        <span style="color: #004d80; user-select: none;">|</span>
+        <a href="info.html?sec=contactos" style="color: #004d80; text-decoration: none;">Contactos</a>
+        <span style="color: #004d80; user-select: none;">|</span>
+        <a href="info.html?sec=politicas" style="color: #004d80; text-decoration: none;">Políticas</a>
+    </div>
+
+      <!-- BOTÓN FLOTANTE DE FACEBOOK -->
+<a aria-label='Síguenos en Facebook' class='btn-facebook-flotante' href='https://www.facebook.com/share/1CT1kd1YEk/' target='_blank'>
+  <svg fill='white' height='28' viewBox='0 0 24 24' width='28'>
+    <path d='M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z'/>
+  </svg>
+</a>
+
+<style>
+.btn-facebook-flotante {
+  position: fixed!important;
+  bottom: 20px!important;
+  right: 20px!important; /* Lado izquierdo, WhatsApp está a la derecha */
+  background: #1877F2!important; /* Azul Facebook */
+  width: 60px!important;
+  height: 60px!important;
+  border-radius: 25%!important;
+  display: flex!important;
+  align-items: center!important;
+  justify-content: center!important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3)!important;
+  z-index: 9999!important;
+  transition: all 0.3s!important;
+}
+.btn-facebook-flotante:hover {
+  transform: scale(1.1)!important;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.4)!important;
+}
+@media (max-width: 768px) {
+  .btn-facebook-flotante {
+    width: 55px!important;
+    height: 55px!important;
+    bottom: 15px!important;
+    right: 15px!important;
+  }
+}
+</style>
+<!-- FIN BOTÓN FACEBOOK -->   
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const lista = JSON.parse(localStorage.getItem('mis_productos')) || [];
+            const contenedor = document.getElementById('contenedor-aleatorio-principal');
+            const seccion = document.getElementById('seccion-aleatoria-inicio');
+            
+            if (lista.length === 0) return;
+
+            // Definimos todas tus categorías oficiales
+            const categorias = ['audio', 'ropa', 'muebles', 'suministros', 'games', 'disco'];
+            let productosSugeridos = [];
+
+            // Buscamos un artículo al azar por cada categoría registrada
+            categorias.forEach(cat => {
+                let filtrados = lista.filter(p => p.categoria === cat);
+                if (filtrados.length > 0) {
+                    // Lo barajamos y tomamos el primero que salga
+                    filtrados.sort(() => Math.random() - 0.5);
+                    productosSugeridos.push(filtrados[0]);
+                }
+            });
+
+            // Si encontramos al menos un artículo, mostramos la sección
+            if (productosSugeridos.length > 0) {
+                seccion.style.display = 'block';
+                contenedor.innerHTML = "";
+                
+                productosSugeridos.forEach(prod => {
+                    let foto = 'https://placehold.co';
+                    if (prod.todasLasFotos && prod.todasLasFotos.length > 0) {
+                        foto = prod.todasLasFotos;
+                    }
+                    
+                    contenedor.innerHTML += `
+                        <a href="detalles.html?id=${prod.id}" class="tarjeta-variada">
+                            <span class="tag-categoria">${prod.categoria}</span>
+                            <div class="variado-img-container">
+                                <img src="${foto}" alt="${prod.titulo}">
+                            </div>
+                            <h3>${prod.titulo}</h3>
+                            <p class="precio-variado">$${parseFloat(prod.precio).toFixed(2)}</p>
+                        </a>
+                    `;
+                });
+            }
+        });
+    </script>
+
+     <script>
+        // MOTOR DEL BUSCADOR EN TIEMPO REAL
+        document.getElementById('input-buscar-tienda').addEventListener('input', function(e) {
+            const texto = e.target.value.toLowerCase().trim();
+            const cajaResultados = document.getElementById('caja-resultados-tienda');
+            const listaProductos = JSON.parse(localStorage.getItem('mis_productos')) || [];
+
+            // Si el buscador está vacío, escondemos la caja flotante y paramos
+            if (texto === "") {
+                cajaResultados.style.display = "none";
+                cajaResultados.innerHTML = "";
+                return;
+            }
+
+            // Filtramos los productos que coincidan en título o descripción
+            const filtrados = listaProductos.filter(p => 
+                p.titulo.toLowerCase().includes(texto) || 
+                (p.descripcion && p.descripcion.toLowerCase().includes(texto))
+            );
+
+            cajaResultados.innerHTML = "";
+            cajaResultados.style.display = "block";
+
+            if (filtrados.length === 0) {
+                cajaResultados.innerHTML = `<div class="sin-resultados"> No encontramos "${e.target.value}"</div>`;
+                return;
+            }
+
+            // Dibujamos los primeros 5 resultados sugeridos con su foto y enlace directo
+            filtrados.slice(0, 5).forEach(prod => {
+                let foto = 'https://placehold.co';
+                if (prod.todasLasFotos && prod.todasLasFotos.length > 0) {
+                    foto = prod.todasLasFotos;
+                }
+
+                cajaResultados.innerHTML += `
+                    <a href="detalles.html?id=${prod.id}" class="item-resultado">
+                        <img src="${foto}" alt="${prod.titulo}">
+                        <div class="info-res">
+                            <h4>${prod.titulo}</h4>
+                            <p>$${parseFloat(prod.precio).toFixed(2)}</p>
+                        </div>
+                    </a>
+                `;
+            });
+        });
+
+        // Oculta la caja si el usuario hace clic en cualquier otra parte de la pantalla
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.contenedor-buscador')) {
+                document.getElementById('caja-resultados-tienda').style.display = "none";
+            }
+        });
+    </script>
+
+</body>
+</html>

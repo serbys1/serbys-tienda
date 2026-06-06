@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SERBYS | Información Oficial</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f9f9f9; color: #333; }
+        .navbar { background-color: #ffcc00; padding: 15px 0; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 100%; margin: 0; }
+        .logo-contenedor { display: block; text-align: center; }
+        .imagen-del-logo { width: 250px; height: auto; object-fit: contain; display: inline-block; }
+        
+        .container-info { max-width: 850px; margin: 40px auto; padding: 20px; box-sizing: border-box; }
+        
+        /* DISEÑO DE LA CAJA AZUL DE LOGÍSTICA */
+        .caja-logistica { background-color: #0056b3; border-radius: 12px; padding: 40px 20px; text-align: center; color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .caja-logistica h2 { color: #ffcc00; font-size: 36px; margin: 0 0 5px 0; font-weight: bold; }
+        .caja-logistica p.subtitulo { font-size: 18px; margin: 0 0 30px 0; font-weight: normal; }
+        
+        /* Contenedor de las dos columnas blancas */
+        .grid-logistica { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 30px; }
+        
+        /* Tarjetas Blancas Redondeadas */
+        .tarjeta-envio { background: white; color: #333; border-radius: 10px; padding: 25px 20px; width: 280px; box-sizing: border-box; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: flex; flex-direction: column; align-items: center; }
+        .tarjeta-envio .icono { font-size: 35px; margin-bottom: 10px; }
+        .tarjeta-envio h3 { color: #0056b3; font-size: 18px; margin: 0 0 12px 0; font-weight: bold; text-transform: uppercase; border-bottom: 2px solid #ffcc00; padding-bottom: 5px; width: 100%; text-align: center; }
+        .tarjeta-envio p { font-size: 13px; line-height: 1.6; color: #555; margin: 0; text-align: center; }
+        
+        /* Botón Verde Consultar */
+        .btn-consultar-envio { display: inline-flex; align-items: center; gap: 10px; background-color: #00c853; color: white; text-decoration: none; padding: 15px 30px; font-weight: bold; font-size: 16px; border-radius: 6px; text-transform: uppercase; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: background 0.2s; margin-top: 10px; }
+        .btn-consultar-envio:hover { background-color: #00a543; }
+
+        /* DISEÑO PARA LAS OTRAS PÁGINAS TRADICIONALES */
+        .vista-normal { background: white; border-radius: 8px; padding: 40px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .vista-normal h1 { color: #003399; font-size: 32px; border-bottom: 3px solid #ffcc00; padding-bottom: 10px; margin-top: 0; }
+        .vista-normal p { font-size: 16px; line-height: 1.8; color: #555; white-space: pre-line; }
+        
+        .btn-volver { display: inline-block; background-color: #003399; color: white; text-decoration: none; padding: 12px 24px; font-weight: bold; border-radius: 4px; margin-top: 30px; }
+        .btn-volver:hover { background-color: #002266; }
+    </style>
+</head>
+<body>
+
+    <header class="navbar">
+        <a href="index.html" class="logo-contenedor">
+            <img src="serbis1.jpg" alt="serbys" class="imagen-del-logo">
+        </a>
+    </header>
+
+    <div class="container-info" id="bloque-dinamico">
+        <!-- JavaScript inyectará el diseño aquí -->
+    </div>
+
+    <script>
+        window.onload = function() {
+            const parametros = new URLSearchParams(window.location.search);
+            const seccion = parametros.get('sec');
+            const contenedor = document.getElementById('bloque-dinamico');
+            
+            // CONFIGURACIÓN DE TU TELÉFONO REAL DE WHATSAPP
+            const miTelefono = "593980372540"; 
+            const linkWhatsappLogistica = `https://wa.me/593980372540?text=${encodeURIComponent("¡Hola Serbys envio! Deseo consultar el costo de envío a mi ciudad por favor.")}`;
+
+            if (seccion === "logistica") {
+                // DISEÑO EXACTO DE TU FOTO REPLICADO EN HTML/CSS
+                contenedor.innerHTML = `
+                    <div class="caja-logistica">
+                        <h2>Logística</h2>
+                        <p class="subtitulo">Hacemos envíos a todo el Ecuador</p>
+                        
+                        <div class="grid-logistica">
+                            <!-- Tarjeta 1: Cooperativas -->
+                            <div class="tarjeta-envio">
+                                <span class="icono">🚌</span>
+                                <h3>Cooperativas</h3>
+                                <p>Tu paquete llega al terminal de tu ciudad <strong>$5.00 tarifa</strong>. El costo varía según peso - Llega en 1 a 2 días Ideal si el terminal te queda cerca.</p>
+                            </div>
+                            
+                            <!-- Tarjeta 2: Servientrega -->
+                            <div class="tarjeta-envio">
+                                <span class="icono">📦</span>
+                                <h3>Servientrega</h3>
+                                <p>Tu paquete llega a la oficina más cercana Desde <strong>$10.50</strong> - Llega en 24 a 48h El costo varía según peso y ciudad Te avisamos cuando llegue para que retires.</p>
+                            </div>
+                        </div>
+                        
+                        <p style="font-size: 16px; font-weight: bold; color: #ffcc00; margin-bottom: 15px;">Consulta el costo de envío por WhatsApp antes de comprar</p>
+                        
+                        <a href="${linkWhatsappLogistica}" target="_blank" class="btn-consultar-envio">
+                            📲 Consultar Envío
+                        </a>
+                    </div>
+                    <center><a href="index.html" class="btn-volver"><img src="botonatras1.png"></a></center>
+                `;
+            } 
+            else {
+                // Mantiene el diseño limpio para las otras secciones
+                let titulo = "";
+                let contenido = "";
+                
+                if (seccion === "ubicacion") {
+                    titulo = "📍 Ubicación de la Tienda";
+                    contenido = "Serbys ® opera de manera estratégica en Salasaca, Ecuador.\n\nContamos con un punto físico seguro para que puedas revisar y probar todos tus equipos electrónicos personalmente antes de realizar el pago.\n\nHorarios de atención: Lunes a Domingo de 10:00 AM a 8:00 PM.";
+                } 
+                else if (seccion === "pago") {
+                    titulo = "💳 Métodos de Pago Disponibles";
+                    contenido = "Facilitamos tus compras mediante opciones de pago 100% seguras:\n\n1. Efectivo.\n2. Transferencia Bancaria Directa con deuna (Banco Pichincha o Guayaquil).\n3. Aceptamos Visa y MasterCard .";
+                } 
+                else if (seccion === "contactos") {
+                    titulo = "📞 Canales de Contacto";
+                    contenido = "Estamos listos para resolver todas tus dudas de inmediato:\n\n• Soporte Principal WhatsApp: +593 980372540\n• Correo Electrónico: info@serbys.com\n\nRespondemos en menos de 10 minutos.";
+                } 
+                else if (seccion === "politicas") {
+                    titulo = "📜 Políticas de Compra y Garantía";
+                    contenido = "Nuestras políticas aseguran una compra transparente:\n\n• Garantía Estándar: Todos nuestros productos son probados exhaustivamente antes de ser publicados.\n• Cambios: Al ser un Marketplace de artículos seleccionados con precios de oportunidad, no se aceptan devoluciones de dinero una vez verificado el artículo.";
+                } else {
+                    titulo = "Información";
+                    contenido = "Sección no encontrada.";
+                }
+                
+                contenedor.innerHTML = `
+                    <div class="vista-normal">
+                        <h1>${titulo}</h1>
+                        <p>${contenido}</p>
+                        <a href="index.html" class="btn-volver"><img src="botonatras1.png"></a>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
