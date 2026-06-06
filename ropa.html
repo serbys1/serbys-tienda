@@ -236,11 +236,15 @@ function cargarProductosRopa() {
     
     contenedor.innerHTML = "";
     productosVisibles.forEach(prod => {
-        let fotoPortada = 'https://placehold.co';
-        if (prod.todasLasFotos && prod.todasLasFotos.length > 0) {
-            fotoPortada = prod.todasLasFotos;
-        }
-        
+      let fotoPortada = 'https://placeholder.co';
+if (prod.imagenes && prod.imagenes.length > 0) {
+    const indiceAleatorio = Math.floor(Math.random() * prod.imagenes.length);
+    fotoPortada = prod.imagenes[indiceAleatorio];
+} else if (prod.imagen) {
+    fotoPortada = prod.imagen;
+} else if (prod.todasLasFotos && prod.todasLasFotos.length > 0) {
+    fotoPortada = prod.todasLasFotos[0];
+}
         contenedor.innerHTML += `
             <div class="producto">
                 <div class="producto-img-container">
