@@ -251,7 +251,10 @@ if (prod.imagenes && prod.imagenes.length > 0) {
     fotoPortada = prod.imagenes[indiceAleatorio];
 } else if (prod.imagen) {
     fotoPortada = prod.imagen;
+} else if (prod.todasLasFotos && prod.todasLasFotos.length > 0) {
+    fotoPortada = prod.todasLasFotos[0];
 }
+
 
                 
                 contenedor.innerHTML += `
