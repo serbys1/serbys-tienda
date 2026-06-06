@@ -386,5 +386,41 @@
         });
     </script>
 
+<!-- REEMPLAZA EL BLOQUE DE SCRIPTS AL FINAL DE TU INDEX.HTML CON ESTE -->
+<script type="module">
+    import { initializeApp } from "https://gstatic.com";
+    import { getFirestore, collection, query, orderBy, onSnapshot } from "https://gstatic.com";
+
+    // Tus credenciales reales en la nube
+    const firebaseConfig = {
+        apiKey: "AIzaSyCK3ydBkB_Y3fctSsGLizEQtlYBUaUo8U",
+        authDomain: "://firebaseapp.com",
+        projectId: "serbys-tienda",
+        storageBucket: "serbys-tienda.firebasestorage.app",
+        messagingSenderId: "987419818662",
+        appId: "1:987419818662:web:2eb44b006d75fe9e5b5267"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Leer los productos en tiempo real desde Google
+    const q = query(collection(db, "productos"), orderBy("fecha", "desc"));
+    
+    onSnapshot(q, (snapshot) => {
+        const productosReales = [];
+        snapshot.forEach((doc) => {
+            productosReales.push({ id: doc.id, ...doc.data() });
+        });
+        
+        // Enviamos los productos al catálogo visual de tu web
+        if (window.renderizarProductos) {
+            window.renderizarProductos(productosReales);
+        } else {
+            window.productosTienda = productosReales;
+        }
+    });
+</script>
+
 </body>
 </html>

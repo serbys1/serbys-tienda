@@ -1,108 +1,131 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <script>
-    // ESTE BLOQUE CORRE ANTES DE QUE SE CARGUE LA PÁGINA
-    (function() {
-        const claveCorrecta = "Kellyusa2026"; // <-- CAMBIA ESTO por la contraseña que tú quieras
-        const sesionActiva = sessionStorage.getItem("admin_autenticado");
-
-        if (sesionActiva !== "true") {
-            const intentoClave = prompt("Acceso Restringido. Introduce la contraseña de administrador para ingresar:");
-            
-            if (intentoClave === claveCorrecta) {
-                // Si la clave es correcta, se guarda el permiso solo por esta sesión
-                sessionStorage.setItem("admin_autenticado", "true");
-            } else {
-                alert("Contraseña incorrecta. Acceso denegado.");
-                // Redirige al intruso de vuelta al inicio de la tienda
-                window.location.href = "index.html";
-            }
-        }
-    })();
-</script>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LOW-COST | Panel de Administración</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; color: #333; }
-        .navbar { background-color: #003399; padding: 15px 0; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .logo-text { font-size: 22px; font-weight: bold; color: #fff; text-decoration: none; display: block; }
-        .menu-admin { margin-top: 10px; }
-        .menu-admin a { color: #fcd116; text-decoration: none; font-weight: bold; margin: 0 10px; }
-        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
-        h1 { border-bottom: 3px solid #003399; padding-bottom: 10px; color: #003399; }
-        
-        .catalogo { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 25px; }
-        .producto { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 15px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; }
-        .producto-img-container { width: 100%; height: 150px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; overflow: hidden; background: #eee; }
-        .producto img { max-width: 100%; max-height: 100%; object-fit: contain; }
-        
-        .botones-bloque { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
-        
-        /* BOTÓN AZUL DE EDITAR CORRECTO */
-        .btn-editar { background: #007bff; color: white; border: none; padding: 10px; width: 100%; font-weight: bold; border-radius: 5px; cursor: pointer; font-size: 13px; text-decoration: none; display: block; box-sizing: border-box; }
-        .btn-editar:hover { background: #0056b3; }
-        
-        .btn-eliminar { background: #cc0000; color: white; border: none; padding: 10px; width: 100%; font-weight: bold; border-radius: 5px; cursor: pointer; font-size: 13px; }
-        .btn-eliminar:hover { background: #990000; }
-    </style>
+    <title>Panel Serbys - Automatizado</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Bloque de seguridad con contraseña -->
+    <script>
+        (function() {
+            const claveCorrecta = "Kellyusa2026"; // <-- CAMBIA ESTO por tu contraseña para entrar de PC o celular
+            const sesionActiva = sessionStorage.getItem("admin_autenticado");
+            if (sesionActiva !== "true") {
+                const intentoClave = prompt("Acceso Restringido. Introduce la contraseña de administrador:");
+                if (intentoClave === claveCorrecta) {
+                    sessionStorage.setItem("admin_autenticado", "true");
+                } else {
+                    alert("Contraseña incorrecta.");
+                    window.location.href = "index.html";
+                }
+            }
+        })();
+    </script>
 </head>
 <body>
 
-    <header class="navbar">
-        <div class="logo-text">⚙️ LOW-COST | PANEL DE CONTROL PRIVADO</div>
-        <div class="menu-admin">
-            <a href="crear-producto.html">➕ Publicar Producto</a> | 
-            <a href="index.html" target="_blank">👁️ Ver Tienda Pública</a>
-        </div>
-    </header>
+    <div class="container-admin" style="padding: 20px; max-width: 500px; margin: auto;">
+        <h2>Subir Producto Real - SERBYS</h2>
+        <hr>
+        <form id="form-producto" style="display: flex; flex-direction: column; gap: 15px;">
+            <label>Nombre del Producto:</label>
+            <input type="text" id="nombre" required placeholder="Ej: Parlante Samsung">
 
-    <div class="container">
-        <h1>Inventario de Productos (Modificar o Quitar)</h1>
-        <div class="catalogo" id="lista-admin"></div>
+            <label>Precio (Dólares):</label>
+            <input type="number" step="0.01" id="precio" required placeholder="Ej: 25.00">
+
+            <label>Descripción:</label>
+            <textarea id="descripcion" required placeholder="Detalles del artículo..."></textarea>
+
+            <label>Categoría:</label>
+            <select id="categoria" required>
+                <option value="audio">AUDIO</option>
+                <option value="ropa">ROPA</option>
+                <option value="muebles">MUEBLES</option>
+                <option value="herram">HERRAMIENTAS</option>
+            </select>
+
+            <label>Foto del Producto (Nítida):</label>
+            <input type="file" id="foto-file" accept="image/*" required>
+
+            <button type="submit" id="btn-guardar" style="background: #007bff; color: white; padding: 10px; border: none; cursor: pointer;">
+                🚀 PUBLICAR EN LA WEB
+            </button>
+        </form>
+        <p id="mensaje-estado" style="margin-top: 15px; font-weight: bold; color: green;"></p>
     </div>
 
-    <script>
-        function cargarAdmin() {
-            const contenedor = document.getElementById('lista-admin');
-            const lista = JSON.parse(localStorage.getItem('mis_productos')) || [];
-            
-            if(lista.length === 0) {
-                contenedor.innerHTML = "<p>No tienes ningún producto activo en la tienda.</p>";
-                return;
-            }
-            
-            contenedor.innerHTML = "";
-            lista.forEach(prod => {
-                const foto = prod.todasLasFotos && prod.todasLasFotos.length > 0 ? prod.todasLasFotos[0] : 'https://placehold.co';
-                contenedor.innerHTML += `
-                    <div class="producto">
-                        <div class="producto-img-container"><img src="${foto}"></div>
-                        <h3 style="font-size:16px; margin:5px 0;">${prod.titulo}</h3>
-                        <p style="margin:5px 0;"><strong>Precio:</strong> $${prod.precio}</p>
-                        <p style="color: gray; text-transform: uppercase; font-size: 11px; margin:0;">Categoría: ${prod.categoria}</p>
-                        
-                        <div class="botones-bloque">
-                            <!-- Conecta directo con la nueva página de edición -->
-                            <a href="editar-producto.html?id=${prod.id}" class="btn-editar">✏️ Editar Datos / Precio</a>
-                            <button class="btn-eliminar" onclick="eliminar(${prod.id})">❌ Eliminar Vendido</button>
-                        </div>
-                    </div>
-                `;
-            });
-        }
+    <!-- CARGA DE CONEXIÓN A GOOGLE FIREBASE -->
+    <script type="module">
+        import { initializeApp } from "https://gstatic.com";
+        import { getFirestore, collection, addDoc } from "https://gstatic.com";
 
-        function eliminar(id) {
-            if(confirm("¿Seguro que quieres quitar este artículo de la tienda?")) {
-                let lista = JSON.parse(localStorage.getItem('mis_productos')) || [];
-                lista = lista.filter(p => p.id !== id);
-                localStorage.setItem('mis_productos', JSON.stringify(lista));
-                cargarAdmin();
+        // TUS CREDENCIALES REALES DE LA FOTO YA COLOCADAS AQUÍ
+        const firebaseConfig = {
+            apiKey: "AIzaSyCK3ydBkB_Y3fctSsGLizEQtlYBUaUo8U",
+            authDomain: "://firebaseapp.com",
+            projectId: "serbys-tienda",
+            storageBucket: "serbys-tienda.firebasestorage.app",
+            messagingSenderId: "987419818662",
+            appId: "1:987419818662:web:2eb44b006d75fe9e5b5267",
+            measurementId: "G-PG8BB8DLJR"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        document.getElementById('form-producto').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-guardar');
+            const estado = document.getElementById('mensaje-estado');
+            
+            btn.disabled = true;
+            estado.innerText = "Subiendo imagen de forma nítida a internet...";
+
+            const fileInput = document.getElementById('foto-file');
+            const file = fileInput.files[0];
+
+            if(!file) return;
+
+            const formData = new FormData();
+            formData.append('image', file);
+            
+            try {
+                // Subida gratuita automática a ImgBB
+                const response = await fetch('https://imgbb.com', {
+                    method: 'POST',
+                    body: formData
+                });
+                const resData = await response.json();
+                
+                if(resData.success) {
+                    const urlImagenNítida = resData.data.url;
+                    estado.innerText = "Guardando datos en la base de datos de Google...";
+
+                    // Guardamos la información limpia en tu Cloud Firestore
+                    await addDoc(collection(db, "productos"), {
+                        nombre: document.getElementById('nombre').value,
+                        precio: parseFloat(document.getElementById('precio').value),
+                        descripcion: document.getElementById('descripcion').value,
+                        categoria: document.getElementById('categoria').value,
+                        imagen: urlImagenNítida,
+                        fecha: new Date().getTime()
+                    });
+
+                    estado.innerText = "¡Misión cumplida! Producto publicado con éxito en serbys.com";
+                    document.getElementById('form-producto').reset();
+                } else {
+                    estado.innerText = "Error al procesar la nitidez de la imagen.";
+                }
+            } catch (error) {
+                console.error(error);
+                estado.innerText = "Hubo un problema de conexión con el servidor.";
+            } finally {
+                btn.disabled = false;
             }
-        }
-        window.onload = cargarAdmin;
+        });
     </script>
 </body>
 </html>
