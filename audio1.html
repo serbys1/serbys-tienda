@@ -339,9 +339,12 @@
 
             // Dibujamos los primeros 5 resultados sugeridos con su foto y enlace directo
             filtrados.slice(0, 5).forEach(prod => {
-                let foto = 'https://placehold.co';
-                if (prod.todasLasFotos && prod.todasLasFotos.length > 0) {
-                    foto = prod.todasLasFotos;
+                let fotoPortada = 'https://placeholder.co';
+if (prod.imagenes && prod.imagenes.length > 0) {
+    fotoPortada = prod.imagenes[0]; // <-- ASEGÚRATE DE QUE TENGA EL [0] AL FINAL
+} else if (prod.imagen) {
+    fotoPortada = prod.imagen;
+
                 }
 
                 cajaResultados.innerHTML += `
