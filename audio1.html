@@ -362,5 +362,43 @@
             }
         });
     </script>
+    <!-- CÓDIGO PARA LEER LOS PRODUCTOS DE GOOGLE EN AUDIO -->
+<script type="module">
+    import { initializeApp } from "https://gstatic.com";
+    import { getFirestore, collection, query, where, orderBy, onSnapshot } from "https://gstatic.com";
+
+    // Tus credenciales reales en la nube
+    const firebaseConfig = {
+        apiKey: "AIzaSyCK3ydBkB_Y3fctSsGLizEQtlYBUaUo8U",
+        authDomain: "://firebaseapp.com",
+        projectId: "serbys-tienda",
+        storageBucket: "serbys-tienda.firebasestorage.app",
+        messagingSenderId: "987419818662",
+        appId: "1:987419818662:web:2eb44b006d75fe9e5b5267"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Filtra para que en esta pestaña solo salgan los productos de la categoría "audio"
+    const q = query(collection(db, "productos"), where("categoria", "==", "audio"), orderBy("fecha", "desc"));
+    
+    onSnapshot(q, (snapshot) => {
+        const productosAudio = [];
+        snapshot.forEach((doc) => {
+            productosAudio.push({ id: doc.id, ...doc.data() });
+        });
+        
+        // Conecta con tu función que dibuja las tarjetas en pantalla
+        if (window.renderizarProductos) {
+            window.renderizarProductos(productosAudio);
+        } else if (typeof mostrarProductos === 'function') {
+            mostrarProductos(productosAudio);
+        } else {
+            window.productosTienda = productosAudio;
+        }
+    });
+</script>
+
 </body>
 </html>
