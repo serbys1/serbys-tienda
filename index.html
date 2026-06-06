@@ -341,6 +341,62 @@
         });
     });
 </script>
+<!-- CONTENEDOR VISUAL DE PRODUCTOS -->
+<div id="contenedor-aleatorio-principal" style="display: flex; flex-wrap: wrap; gap: 20px; padding: 20px; justify-content: center; max-width: 1200px; margin: auto;"></div>
+
+<!-- ENCHUFE PARA LEER LOS DESTACADOS DESDE GOOGLE FIREBASE -->
+<script type="module">
+    import { initializeApp } from "https://gstatic.com";
+    import { getFirestore, collection, query, orderBy, onSnapshot } from "https://gstatic.com";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCK3ydBkB_Y3fctSsGLizEQtlYBUaUo8U",
+        authDomain: "://firebaseapp.com",
+        projectId: "serbys-tienda",
+        storageBucket: "serbys-tienda.firebasestorage.app",
+        messagingSenderId: "987419818662",
+        appId: "1:987419818662:web:2eb44b006d75fe9e5b5267"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const q = query(collection(db, "productos"), orderBy("fecha", "desc"));
+    
+    onSnapshot(q, (snapshot) => {
+        const productosReales = [];
+        snapshot.forEach((doc) => {
+            productosReales.push({ id: doc.id, ...doc.data() });
+        });
+
+        const contenedor = document.getElementById('contenedor-aleatorio-principal');
+        if (!contenedor) return;
+        contenedor.innerHTML = "";
+
+        productosReales.forEach(prod => {
+            let fotoPortada = 'https://placeholder.co';
+            if (prod.imagenes && prod.imagenes.length > 0) {
+                const indiceAleatorio = Math.floor(Math.random() * prod.imagenes.length);
+                fotoPortada = prod.imagenes[indiceAleatorio];
+            } else if (prod.imagen) {
+                fotoPortada = prod.imagen;
+            }
+
+            // Pinta las tarjetas idénticas a tus pestañas
+            contenedor.innerHTML += `
+                <div class="tarjeta-variada" style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; width: 220px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center;">
+                    <span class="tag-categoria" style="background: #0044cc; color: white; padding: 3px 8px; font-size: 11px; border-radius: 4px; text-transform: uppercase; font-weight: bold; display: inline-block; margin-bottom: 10px;">${prod.categoria}</span>
+                    <div class="variado-img-container" style="height: 150px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 10px;">
+                        <img src="${fotoPortada}" alt="${prod.titulo || prod.nombre}" style="max-width: 100%; max-height: 100%; border-radius: 4px;">
+                    </div>
+                    <h3 style="font-size: 16px; margin: 10px 0; color: #333;">${prod.titulo || prod.nombre}</h3>
+                    <p class="precio-variado" style="color: #0044cc; font-weight: bold; font-size: 18px; margin-bottom: 15px;">$${parseFloat(prod.precio).toFixed(2)}</p>
+                    <a href="detalles.html?id=${prod.id}" class="btn-ver-detalles" style="background: #ffcc00; color: #333; text-decoration: none; padding: 8px 15px; border-radius: 4px; font-weight: bold; display: block; font-size: 14px;">Ver Detalles</a>
+                </div>
+            `;
+        });
+    });
+</script>
 
 </body>
 </html>
