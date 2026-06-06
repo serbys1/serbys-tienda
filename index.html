@@ -283,115 +283,11 @@
     </div>
 
   
-    <script>
-        window.addEventListener('DOMContentLoaded', () => {
-            const lista = JSON.parse(localStorage.getItem('mis_productos')) || [];
-            const contenedor = document.getElementById('contenedor-aleatorio-principal');
-            const seccion = document.getElementById('seccion-aleatoria-inicio');
-            
-            if (lista.length === 0) return;
-
-            // Definimos todas tus categorías oficiales
-            const categorias = ['audio', 'ropa', 'muebles', 'suministros', 'games', 'disco'];
-            let productosSugeridos = [];
-
-            // Buscamos un artículo al azar por cada categoría registrada
-            categorias.forEach(cat => {
-                let filtrados = lista.filter(p => p.categoria === cat);
-                if (filtrados.length > 0) {
-                    // Lo barajamos y tomamos el primero que salga
-                    filtrados.sort(() => Math.random() - 0.5);
-                    productosSugeridos.push(filtrados[0]);
-                }
-            });
-
-            // Si encontramos al menos un artículo, mostramos la sección
-            if (productosSugeridos.length > 0) {
-                seccion.style.display = 'block';
-                contenedor.innerHTML = "";
-                
-                productosSugeridos.forEach(prod => {
-                    let foto = 'https://placehold.co';
-                    if (prod.todasLasFotos && prod.todasLasFotos.length > 0) {
-                        foto = prod.todasLasFotos;
-                    }
-                    
-                    contenedor.innerHTML += `
-                        <a href="detalles.html?id=${prod.id}" class="tarjeta-variada">
-                            <span class="tag-categoria">${prod.categoria}</span>
-                            <div class="variado-img-container">
-                                <img src="${foto}" alt="${prod.titulo}">
-                            </div>
-                            <h3>${prod.titulo}</h3>
-                            <p class="precio-variado">$${parseFloat(prod.precio).toFixed(2)}</p>
-                        </a>
-                    `;
-                });
-            }
-        });
-    </script>
-
-     <script>
-        // MOTOR DEL BUSCADOR EN TIEMPO REAL
-        document.getElementById('input-buscar-tienda').addEventListener('input', function(e) {
-            const texto = e.target.value.toLowerCase().trim();
-            const cajaResultados = document.getElementById('caja-resultados-tienda');
-            const listaProductos = JSON.parse(localStorage.getItem('mis_productos')) || [];
-
-            // Si el buscador está vacío, escondemos la caja flotante y paramos
-            if (texto === "") {
-                cajaResultados.style.display = "none";
-                cajaResultados.innerHTML = "";
-                return;
-            }
-
-            // Filtramos los productos que coincidan en título o descripción
-            const filtrados = listaProductos.filter(p => 
-                p.titulo.toLowerCase().includes(texto) || 
-                (p.descripcion && p.descripcion.toLowerCase().includes(texto))
-            );
-
-            cajaResultados.innerHTML = "";
-            cajaResultados.style.display = "block";
-
-            if (filtrados.length === 0) {
-                cajaResultados.innerHTML = `<div class="sin-resultados"> No encontramos "${e.target.value}"</div>`;
-                return;
-            }
-
-            // Dibujamos los primeros 5 resultados sugeridos con su foto y enlace directo
-            filtrados.slice(0, 5).forEach(prod => {
-                let foto = 'https://placehold.co';
-                if (prod.todasLasFotos && prod.todasLasFotos.length > 0) {
-                    foto = prod.todasLasFotos;
-                }
-
-                cajaResultados.innerHTML += `
-                    <a href="detalles.html?id=${prod.id}" class="item-resultado">
-                        <img src="${foto}" alt="${prod.titulo}">
-                        <div class="info-res">
-                            <h4>${prod.titulo}</h4>
-                            <p>$${parseFloat(prod.precio).toFixed(2)}</p>
-                        </div>
-                    </a>
-                `;
-            });
-        });
-
-        // Oculta la caja si el usuario hace clic en cualquier otra parte de la pantalla
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.contenedor-buscador')) {
-                document.getElementById('caja-resultados-tienda').style.display = "none";
-            }
-        });
-    </script>
-
-<!-- REEMPLAZA EL BLOQUE DE SCRIPTS AL FINAL DE TU INDEX.HTML CON ESTE -->
+    <!-- ENCHUFE PARA LEER LOS DESTACADOS DESDE GOOGLE FIREBASE -->
 <script type="module">
     import { initializeApp } from "https://gstatic.com";
     import { getFirestore, collection, query, orderBy, onSnapshot } from "https://gstatic.com";
 
-    // Tus credenciales reales en la nube
     const firebaseConfig = {
         apiKey: "AIzaSyCK3ydBkB_Y3fctSsGLizEQtlYBUaUo8U",
         authDomain: "://firebaseapp.com",
@@ -404,7 +300,6 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Leer los productos en tiempo real desde Google
     const q = query(collection(db, "productos"), orderBy("fecha", "desc"));
     
     onSnapshot(q, (snapshot) => {
@@ -412,15 +307,41 @@
         snapshot.forEach((doc) => {
             productosReales.push({ id: doc.id, ...doc.data() });
         });
+
+        // Buscamos tus cajas de diseño originales de la pantalla
+        const seccion = document.getElementById('seccion-aleatoria-inicio');
+        const contenedor = document.getElementById('contenedor-aleatorio-principal') || document.querySelector('.variado-img-container')?.parentElement?.parentElement;
         
-        // Enviamos los productos al catálogo visual de tu web
-        if (window.renderizarProductos) {
-            window.renderizarProductos(productosReales);
-        } else {
-            window.productosTienda = productosReales;
-        }
+        if (!productosReales.length) return;
+        if (seccion) seccion.style.display = 'block';
+        if (contenedor) contenedor.innerHTML = "";
+
+        productosReales.forEach(prod => {
+            let fotoPortada = 'https://placeholder.co';
+            if (prod.imagenes && prod.imagenes.length > 0) {
+                const indiceAleatorio = Math.floor(Math.random() * prod.imagenes.length);
+                fotoPortada = prod.imagenes[indiceAleatorio];
+            } else if (prod.imagen) {
+                fotoPortada = prod.imagen;
+            }
+
+            // Mantiene tu diseño idéntico de tarjetas con bordes amarillos
+            if (contenedor) {
+                contenedor.innerHTML += `
+                    <a href="detalles.html?id=${prod.id}" class="tarjeta-variada" style="text-decoration: none; color: inherit; display: block;">
+                        <span class="tag-categoria" style="text-transform: uppercase;">${prod.categoria}</span>
+                        <div class="variado-img-container">
+                            <img src="${fotoPortada}" alt="${prod.titulo || prod.nombre}">
+                        </div>
+                        <h3>${prod.titulo || prod.nombre}</h3>
+                        <p class="precio-variado">$${parseFloat(prod.precio).toFixed(2)}</p>
+                    </a>
+                `;
+            }
+        });
     });
 </script>
 
 </body>
 </html>
+
