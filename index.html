@@ -1,350 +1,723 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <link rel="icon" type="image/png" href="serbislogito.jpg">
+<!-- Playables SDK -->
+<script>// Playables SDK v1.0.0
+// Game lifecycle bridge: rAF-based game-ready detection + event communication
+(function() {
+  'use strict';
 
+  // Idempotency: skip if already initialized (e.g., server-side injection
+  // followed by client-side inject-javascript via the Bloks webview component).
+  if (window.playablesSDK) return;
+
+  var HANDLER_NAME = 'playablesGameEventHandler';
+  var ANDROID_BRIDGE_NAME = '_MetaPlayablesBridge';
+  var RAF_FRAME_THRESHOLD = 3;
+
+  var gameReadySent = false;
+  var firstInteractionSent = false;
+  var errorSent = false;
+  var frameCount = 0;
+  var originalRAF = window.requestAnimationFrame;
+
+  // --- Transport Layer ---
+
+  function hasIOSBridge() {
+    return !!(window.webkit &&
+              window.webkit.messageHandlers &&
+              window.webkit.messageHandlers[HANDLER_NAME]);
+  }
+
+  function hasAndroidBridge() {
+    return !!(window[ANDROID_BRIDGE_NAME] &&
+              typeof window[ANDROID_BRIDGE_NAME].postEvent === 'function');
+  }
+
+  function isInIframe() {
+    return !!(window.parent && window.parent !== window);
+  }
+
+  function sendEvent(eventName, payload) {
+    var message = {
+      type: eventName,
+      payload: payload || {},
+      timestamp: Date.now()
+    };
+
+    if (hasIOSBridge()) {
+      try {
+        window.webkit.messageHandlers[HANDLER_NAME].postMessage(message);
+      } catch (e) { /* ignore */ }
+      return;
+    }
+
+    if (hasAndroidBridge()) {
+    try {
+      var p = payload || {};
+      p.__secureToken = window.__fbAndroidBridgeAuthToken || '';
+      p.timestamp = message.timestamp;
+      window[ANDROID_BRIDGE_NAME].postEvent(
+        eventName,
+        JSON.stringify(p)
+      );
+    } catch (e) { /* ignore */ }
+    return;
+  }
+
+    if (isInIframe()) {
+      try {
+        window.parent.postMessage(message, '*');
+      } catch (e) { /* ignore */ }
+      return;
+    }
+  }
+
+  // --- rAF Game-Ready Detection ---
+
+  function onFrame() {
+    if (gameReadySent) return;
+
+    frameCount++;
+    if (frameCount >= RAF_FRAME_THRESHOLD) {
+      gameReadySent = true;
+      sendEvent('game_ready', {
+        frame_count: frameCount,
+        detected_at: Date.now()
+      });
+      return;
+    }
+
+    originalRAF.call(window, onFrame);
+  }
+
+  if (originalRAF) {
+    window.requestAnimationFrame = function(callback) {
+      if (!gameReadySent) {
+        return originalRAF.call(window, function(timestamp) {
+          frameCount++;
+          if (frameCount >= RAF_FRAME_THRESHOLD && !gameReadySent) {
+            gameReadySent = true;
+            sendEvent('game_ready', {
+              frame_count: frameCount,
+              detected_at: Date.now()
+            });
+          }
+          callback(timestamp);
+        });
+      }
+      return originalRAF.call(window, callback);
+    };
+  }
+
+  // --- First User Interaction Detection ---
+
+  function setupFirstInteractionDetection() {
+    var events = ['touchstart', 'mousedown', 'keydown'];
+
+    function onFirstInteraction() {
+      if (firstInteractionSent) return;
+      firstInteractionSent = true;
+      sendEvent('user_interaction_start', null);
+
+      for (var i = 0; i < events.length; i++) {
+        document.removeEventListener(events[i], onFirstInteraction, true);
+      }
+    }
+
+    for (var i = 0; i < events.length; i++) {
+      document.addEventListener(events[i], onFirstInteraction, true);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupFirstInteractionDetection);
+  } else {
+    setupFirstInteractionDetection();
+  }
+
+  // --- Auto Error Capture ---
+
+  window.addEventListener('error', function(event) {
+    if (errorSent) return;
+    errorSent = true;
+    sendEvent('error', {
+      message: event.message || 'Unknown error',
+      source: event.filename || '',
+      lineno: event.lineno || 0,
+      colno: event.colno || 0,
+      auto_captured: true
+    });
+  });
+
+  window.addEventListener('unhandledrejection', function(event) {
+    if (errorSent) return;
+    errorSent = true;
+    var reason = event.reason;
+    sendEvent('error', {
+      message: (reason instanceof Error) ? reason.message : String(reason),
+      type: 'unhandled_promise_rejection',
+      auto_captured: true
+    });
+  });
+
+  // --- Public API ---
+
+  window.playablesSDK = {
+    complete: function(score) {
+      sendEvent('game_ended', {
+        score: score,
+        completed: true
+      });
+    },
+
+    error: function(message) {
+      if (errorSent) return;
+      errorSent = true;
+      sendEvent('error', {
+        message: message || 'Unknown error',
+        auto_captured: false
+      });
+    },
+
+    sendEvent: function(eventName, payload) {
+      if (!eventName || typeof eventName !== 'string') return;
+      sendEvent(eventName, payload);
+    }
+  };
+
+  // Kick off rAF detection in case no game code calls rAF immediately
+  if (originalRAF) {
+    originalRAF.call(window, onFrame);
+  }
+})();</script>
+<!-- PLAYABLE_TOUCH_PATCH_V1 --><script>
+(function() {
+  if (window.__playableTouchPatchInstalled) return;
+  window.__playableTouchPatchInstalled = true;
+  var origAdd = EventTarget.prototype.addEventListener;
+  var blockedTypes = { touchstart: 1, touchmove: 1, wheel: 1 };
+  EventTarget.prototype.addEventListener = function(type, listener, options) {
+    if (blockedTypes[type]) {
+      if (options === undefined || options === null) {
+        options = { passive: true };
+      } else if (typeof options === 'boolean') {
+        options = { capture: options, passive: true };
+      } else {
+        options = Object.assign({}, options, { passive: true });
+      }
+    }
+    return origAdd.call(this, type, listener, options);
+  };
+})();
+</script><script>window.Intl=window.Intl||{};Intl.t=function(s){return(Intl._locale&&Intl._locale[s])||s;};</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SERBYS | Inicio</title>
+    <title>Nova Studio - Agencia Digital</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        /* Estilos Base para eliminar el marco blanco de la pantalla */
-        body { font-family: Arial, sans-serif; margin: 0 !important; padding: 0 !important; background-color: #f9f9f9; color: #333; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         
-         /* BARRA SUPERIOR IDÉNTICA AL INICIO */
-        .navbar { background-color: #ffcc00; padding: 15px 0; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 100%; margin: 0; }
-        .logo-contenedor { display: block; text-align: center; }
-        .imagen-del-logo { width: 250px; height: auto; object-fit: contain; display: inline-block; }
-        
-               nav { 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            gap: 24px; 
-            margin-top: 15px; 
-            width: 100%;
+        * {
+            font-family: 'Inter', sans-serif;
         }
-        nav a { 
-            color: #333333; 
-            text-decoration: none; 
-            font-weight: normal; 
-            font-size: 14px; 
-            display: inline-block;
-            transition: color 0.1s ease;
+        
+        html {
+            scroll-behavior: smooth;
         }
-        nav a:hover { 
-            color: #fcfeff !important; 
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
-
-        /* Contenedor de Tarjetas del Inicio */
-        .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
         
-        /* Cuadrícula de categorías principales */
-        .categorias-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; justify-content: center; }
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
         
-        /* Tarjeta blanca de categoría */
-        .tarjeta-categoria { background: white; border: 8px solid #e0e0e0; border-radius: 8px; padding: 20px; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.05); transition: transform 0.2s, box-shadow 0.2s; text-decoration: none; color: inherit; display: flex; flex-direction: column; justify-content: space-between; height: 220px; }
-        .tarjeta-categoria:hover { transform: translateY(-5px); box-shadow: 0 6px 12px rgba(0,0,0,0.1); }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
         
-        .cat-img-container { width: 100%; height: 150px; display: flex; align-items: center; justify-content: center; margin-bottom: 15px; overflow: hidden; background-color: #fcfcfc; border-radius: 6px; }
-        .cat-img-container img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
         
-        .tarjeta-categoria h2 { font-size: 18px; color: #111; margin: 10px 0 5px 0; text-transform: uppercase; }
-        .tarjeta-categoria p { font-size: 13px; color: #666; margin: 0; line-height: 1.4; }
-
-                /* NUEVO: CUADRÍCULA DE ARTÍCULOS VARIADOS EN EL INICIO */
-        .bloque-variado-inicio { margin-top: 40px; text-align: left; }
-        .bloque-variado-inicio h2 { font-size: 20px; color: #111; margin-bottom: 20px; font-weight: bold; text-transform: uppercase; border-bottom: 2px solid #ffcc00; padding-bottom: 8px; }
-        .grid-variado { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; justify-content: center; }
+        .card-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
         
-        .tarjeta-variada { background: white; border: 1px solid #e0e0e0; border-radius: 6px; padding: 12px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; text-decoration: none; color: inherit; transition: transform 0.2s; }
-        .tarjeta-variada:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.08); }
+        .btn-primary {
+            transition: all 0.3s ease;
+        }
         
-        .variado-img-container { width: 100%; height: 130px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; overflow: hidden; background-color: #f5f5f5; border-radius: 4px; }
-        .variado-img-container img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
         
-        .tarjeta-variada h3 { font-size: 14px; margin: 8px 0; color: #111; height: 36px; overflow: hidden; line-height: 1.2; text-align: left; font-weight: normal; }
-        .tarjeta-variada .precio-variado { font-size: 16px; font-weight: bold; color: #003399; text-align: left; margin: 5px 0 0 0; }
-        .tarjeta-variada .tag-categoria { font-size: 10px; color: white; background-color: #004d80; padding: 2px 6px; border-radius: 3px; width: fit-content; text-transform: uppercase; margin-bottom: 5px; font-weight: bold; }
-
- .info-detalle {
-                display: flex !important;
-                flex-direction: column !important;
-                width: 100% !important;
-                gap: 12px !important;
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
             }
-            .columna-izquierda-precio {
-                display: flex !important;
-                flex-direction: column !important;
-                width: 100% !important;
-                order: 1 !important; /* Fuerza a que los textos vayan juntos en orden */
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
-            .descripcion-detalle {
-                margin-top: 10px !important;
-                order: 4 !important; /* Manda la descripción abajo del botón */
-            }
-            .btn-comprar-detalle {
-                order: 3 !important; /* Pone el botón comprar justo debajo del precio */
-                width: 100% !important;
-            }
-            .cuadro-condiciones-pequeno {
-                order: 5 !important; /* Manda el cuadrito de condición al puro final */
-                width: 100% !important;
-                box-sizing: border-box !important;
-            }
-
-                        /* HACE QUE EL MENÚ EN EL CELULAR SE ACOMODE EN DOS FILAS SIN SALIRSE */
-            nav {
-                flex-wrap: wrap !important;
-                gap: 12px 16px !important; /* Espacio limpio entre los botones */
-                padding: 0 10px !important;
-                justify-content: center !important;
-            }
-            nav a {
-                font-size: 13px !important; /* Letra un poquito más cómoda para que quepan mejor */
-            }
-
-             /* 🔍 BARRA DE BÚSQUEDA INTELIGENTE */
-        .contenedor-buscador {
+        }
+        
+        .animate-fade-in-up {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+        
+        .nav-link {
             position: relative;
-            width: 100%;
-            max-width: 400px;
-            margin: 15px auto 0 auto;
-        }
-        .input-buscador {
-            width: 100%;
-            padding: 10px 40px 10px 15px;
-            font-size: 14px;
-            border: 1px solid #ccc;
-            border-radius: 25px;
-            outline: none;
-            box-sizing: border-box;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
-        }
-        .input-buscador:focus {
-            border-color: #003399;
-            box-shadow: 0 0 5px rgba(0,51,153,0.2);
         }
         
-        /* CAJA DE RESULTADOS FLOTANTE */
-        .resultados-buscador {
+        .nav-link::after {
+            content: '';
             position: absolute;
-            top: 100%;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
             left: 0;
-            right: 0;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            margin-top: 5px;
-            max-height: 300px;
-            overflow-y: auto;
-            z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            display: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
         }
-        .item-resultado {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px;
-            text-decoration: none;
-            color: #333;
-            border-bottom: 1px solid #f5f5f5;
-            transition: background 0.2s;
+        
+        .nav-link:hover::after {
+            width: 100%;
         }
-        .item-resultado:hover {
-            background-color: #f0f4f8;
-        }
-        .item-resultado:last-child {
-            border-bottom: none;
-        }
-        .item-resultado img {
-            width: 45px;
-            height: 45px;
-            object-fit: contain;
-            background: #f9f9f9;
-            border-radius: 4px;
-        }
-        .item-resultado .info-res {
-            flex: 1;
-            text-align: left;
-        }
-        .item-resultado .info-res h4 {
-            margin: 0;
-            font-size: 13px;
-            color: #111;
-            text-transform: capitalize;
-        }
-        .item-resultado .info-res p {
-            margin: 2px 0 0 0;
-            font-size: 12px;
-            font-weight: bold;
-            color: #003399;
-        }
-        .sin-resultados {
-            padding: 15px;
-            color: gray;
-            font-size: 13px;
-            text-align: center;
+        
+        .input-focus:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
     </style>
 </head>
-<body>
+<body class="bg-gray-50 text-gray-800 antialiased">
+    <!-- Header / Navbar -->
+    <header id="header" class="fixed w-full top-0 z-50 transition-all duration-300 bg-white/80 backdrop-blur-md border-b border-gray-100">
+        <nav class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-lg gradient-bg flex items-center justify-center">
+                        <i class="fa-solid fa-bolt text-white text-xl"></i>
+                    </div>
+                    <span class="text-2xl font-bold gradient-text">Nova Studio</span>
+                </div>
+                
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#inicio" class="nav-link text-gray-700 hover:text-gray-900 font-medium">Inicio</a>
+                    <a href="#servicios" class="nav-link text-gray-700 hover:text-gray-900 font-medium">Servicios</a>
+                    <a href="#contacto" class="nav-link text-gray-700 hover:text-gray-900 font-medium">Contacto</a>
+                    <a href="#contacto" class="btn-primary gradient-bg text-white px-6 py-2.5 rounded-full font-medium">
+                        Empezar Ahora
+                    </a>
+                </div>
 
-    <!-- Barra Superior Sincronizada con Audio -->
-    <header class="navbar">
-        <a href="index.html" class="logo-contenedor">
-            <img src="serbis1.jpg" alt="SERBYS" class="imagen-del-logo">
-        </a>
-        <!-- 🔍 NUEVO ELEMENTO: BARRA DE BÚSQUEDA INTERACTIVA -->
-        <div class="contenedor-buscador">
-            <input type="text" id="input-buscar-tienda" class="input-buscador" placeholder="Buscar Productos Usados y Nuevos...">
-            <div id="caja-resultados-tienda" class="resultados-buscador"></div>
-        </div>
-        <nav>
-            <a href="index.html" style="color: #3f3d3d;">INICIO</a> <span class="separador">|</span>
-            <a href="audio1.html">AUDIO</a> <span class="separador">|</span>
-            <a href="ropa.html">ROPA</a> <span class="separador">|</span>
-            <a href="muebles.html">MUEBLES</a> <span class="separador">|</span>
-            <a href="suministros.html">SUMINISTROS</a> <span class="separador">|</span>
-            <a href="game.html">GAMES</a> <span class="separador">|</span>
-            <a href="disco.html">DISCO</a>
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-btn" class="md:hidden text-gray-700 text-2xl">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div id="mobile-menu" class="hidden md:hidden mt-4 pb-4 space-y-3">
+                <a href="#inicio" class="block text-gray-700 hover:text-gray-900 font-medium py-2">Inicio</a>
+                <a href="#servicios" class="block text-gray-700 hover:text-gray-900 font-medium py-2">Servicios</a>
+                <a href="#contacto" class="block text-gray-700 hover:text-gray-900 font-medium py-2">Contacto</a>
+                <a href="#contacto" class="block gradient-bg text-white px-6 py-2.5 rounded-full font-medium text-center mt-4">
+                    Empezar Ahora
+                </a>
+            </div>
         </nav>
     </header>
 
-    <!-- Contenido del Home con tus imágenes reales -->
-    <div class="container">
-        <div class="categorias-grid">
-          
-            <!-- Tarjeta 1 -->
-            <div class="tarjeta-categoria">
-                <div class="cat-img-container">
-                    <img src="serbis3.png" alt="LOW-COST">
-                </div>
-                <div>
-                    <h2>Reúsa. Ahorra. Disfruta.</h2>
-                    <p>Probado físicamente. Tu compra es 100% segura.</p>
-                </div>
-            </div>
-
-            <!-- Tarjeta 2: COMPLETAMENTE FIJA Y TOTALMENTE LIMPIA -->
-            <div class="tarjeta-categoria">
-                <div class="cat-img-container">
-                    <img src="ImagenAUDIO.png" alt="Audio">
-                </div>
-                <div>
-                    <h2>AUDIO Y RELACIONADOS</h2>
-                    <p>Parlantes, amplificadores, radios, audífonos modernos.</p>
-                </div>
-            </div>
-
-            <!-- Tarjeta 3 -->
-            <div class="tarjeta-categoria">
-                <div class="cat-img-container">
-                    <img src="ImagenROPA.jpg" alt="Ropa y Muebles">
-                </div>
-                <div>
-                    <h2>ROPA Y MUEBLES</h2>
-                    <p>Ropa de marca, chompas, zapatos, maletas de viaje.</p>
-                </div>
-            </div>
-
-            <!-- Tarjeta 4 -->
-            <div class="tarjeta-categoria">
-                <div class="cat-img-container">
-                    <img src="ImagenHERRAMIENTAS.png" alt="Suministros">
-                </div>
-                <div>
-                    <h2>SUMINISTROS Y HERR.</h2>
-                    <p>Taladros, pulidoras, cables, bicicletas y más.</p>
-                </div>
-            </div>
-
-        </div>
-    </div>
-
-        <!-- Contenedor dinámico para los artículos sugeridos del inicio -->
-    <div class="container" id="seccion-aleatoria-inicio" style="display: none; margin-top: 20px;">
-        <div class="bloque-variado-inicio">
-            <h2>Artículos destacados del día</h2>
-            <div class="grid-variado" id="contenedor-aleatorio-principal"></div>
-        </div>
-    </div>
-
-    <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; font-size: 13px; font-weight: normal;">
-        <a href="info.html?sec=logistica" style="color: #004d80; text-decoration: none;">Logística</a>
-        <span style="color: #004d80; user-select: none;">|</span>
-        <a href="info.html?sec=ubicacion" style="color: #004d80; text-decoration: none;">Ubicación</a>
-        <span style="color: #004d80; user-select: none;">|</span>
-        <a href="info.html?sec=pago" style="color: #004d80; text-decoration: none;">Método de Pago</a>
-        <span style="color: #004d80; user-select: none;">|</span>
-        <a href="info.html?sec=contactos" style="color: #004d80; text-decoration: none;">Contactos</a>
-        <span style="color: #004d80; user-select: none;">|</span>
-        <a href="info.html?sec=politicas" style="color: #004d80; text-decoration: none;">Políticas</a>
-    </div>
-
-  
-    <div id="contenedor-aleatorio-principal" style="display: flex; flex-wrap: wrap; gap: 20px; padding: 20px; justify-content: center; max-width: 1200px; margin: auto;"></div>
-
-    <!-- ENCHUFE PARA LEER LOS DESTACADOS DESDE GOOGLE FIREBASE -->
-<script type="module">
-    import { initializeApp } from "https://gstatic.com";
-    import { getFirestore, collection, query, orderBy, onSnapshot } from "https://gstatic.com";
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyCK3ydBkB_Y3fctSsGLizEQtlYBUaUo8U",
-        authDomain: "://firebaseapp.com",
-        projectId: "serbys-tienda",
-        storageBucket: "serbys-tienda.firebasestorage.app",
-        messagingSenderId: "987419818662",
-        appId: "1:987419818662:web:2eb44b006d75fe9e5b5267"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    const q = query(collection(db, "productos"), orderBy("fecha", "desc"));
-    
-    onSnapshot(q, (snapshot) => {
-        const productosReales = [];
-        snapshot.forEach((doc) => {
-            productosReales.push({ id: doc.id, ...doc.data() });
-        });
-
-        // Buscamos tus cajas de diseño originales de la pantalla
-        const seccion = document.getElementById('seccion-aleatoria-inicio');
-        const contenedor = document.getElementById('contenedor-aleatorio-principal') || document.querySelector('.variado-img-container')?.parentElement?.parentElement;
-        
-        if (!productosReales.length) return;
-        if (seccion) seccion.style.display = 'block';
-        if (contenedor) contenedor.innerHTML = "";
-
-        productosReales.forEach(prod => {
-            let fotoPortada = 'https://placeholder.co';
-            if (prod.imagenes && prod.imagenes.length > 0) {
-                const indiceAleatorio = Math.floor(Math.random() * prod.imagenes.length);
-                fotoPortada = prod.imagenes[indiceAleatorio];
-            } else if (prod.imagen) {
-                fotoPortada = prod.imagen;
-            }
-
-            // Mantiene tu diseño idéntico de tarjetas con bordes amarillos
-            if (contenedor) {
-                contenedor.innerHTML += `
-                    <a href="detalles.html?id=${prod.id}" class="tarjeta-variada" style="text-decoration: none; color: inherit; display: block;">
-                        <span class="tag-categoria" style="text-transform: uppercase;">${prod.categoria}</span>
-                        <div class="variado-img-container">
-                            <img src="${fotoPortada}" alt="${prod.titulo || prod.nombre}">
+    <!-- Hero / Sección Principal -->
+    <section id="inicio" class="pt-32 pb-20 px-6">
+        <div class="container mx-auto">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <div class="animate-fade-in-up">
+                    <div class="inline-block mb-4 px-4 py-2 bg-purple-50 rounded-full">
+                        <span class="text-sm font-semibold gradient-text">
+                            <i class="fa-solid fa-sparkles mr-2"></i>Bienvenido a Nova Studio
+                        </span>
+                    </div>
+                    <h1 class="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6">
+                        Diseñamos el 
+                        <span class="gradient-text">futuro digital</span> 
+                        de tu marca
+                    </h1>
+                    <p class="text-lg md:text-xl text-gray-600 mb-8 leading-relaxed">
+                        Transformamos ideas en experiencias digitales excepcionales. Desde diseño web hasta estrategias de marketing, creamos soluciones que impulsan tu negocio al siguiente nivel.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <a href="#contacto" class="btn-primary gradient-bg text-white px-8 py-4 rounded-full font-semibold text-center">
+                            Comenzar mi proyecto
+                            <i class="fa-solid fa-arrow-right ml-2"></i>
+                        </a>
+                        <a href="#servicios" class="bg-white text-gray-800 px-8 py-4 rounded-full font-semibold text-center border-2 border-gray-200 hover:border-purple-400 transition-all">
+                            Ver servicios
+                        </a>
+                    </div>
+                    <div class="flex items-center gap-8 mt-12">
+                        <div>
+                            <p class="text-3xl font-bold gradient-text">250+</p>
+                            <p class="text-sm text-gray-600">Proyectos</p>
                         </div>
-                        <h3>${prod.titulo || prod.nombre}</h3>
-                        <p class="precio-variado">$${parseFloat(prod.precio).toFixed(2)}</p>
+                        <div class="h-12 w-px bg-gray-300"></div>
+                        <div>
+                            <p class="text-3xl font-bold gradient-text">98%</p>
+                            <p class="text-sm text-gray-600">Satisfacción</p>
+                        </div>
+                        <div class="h-12 w-px bg-gray-300"></div>
+                        <div>
+                            <p class="text-3xl font-bold gradient-text">5 años</p>
+                            <p class="text-sm text-gray-600">Experiencia</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative animate-fade-in-up" style="animation-delay: 0.2s;">
+                    <div class="absolute inset-0 gradient-bg rounded-3xl blur-3xl opacity-20"></div>
+                    <img src="https://images.unsplash.com/photo-1551650975-87deedd944c3?w=800&h=600&fit=crop" 
+                         alt="Trabajo en equipo" 
+                         class="relative rounded-3xl shadow-2xl w-full h-auto">
+                    <div class="absolute -bottom-6 -left-6 glass-effect rounded-2xl p-6 shadow-xl">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 gradient-bg rounded-full flex items-center justify-center">
+                                <i class="fa-solid fa-rocket text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-gray-800">+150%</p>
+                                <p class="text-sm text-gray-600">Crecimiento promedio</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Servicios -->
+    <section id="servicios" class="py-20 px-6 bg-white">
+        <div class="container mx-auto">
+            <div class="text-center max-w-2xl mx-auto mb-16">
+                <p class="text-sm font-semibold gradient-text uppercase tracking-wider mb-3">Nuestros Servicios</p>
+                <h2 class="text-4xl md:text-5xl font-bold mb-4">Soluciones completas para tu negocio</h2>
+                <p class="text-lg text-gray-600">Ofrecemos un conjunto integral de servicios digitales diseñados para hacer crecer tu marca</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="card-hover bg-gradient-to-br from-purple-50 to-blue-50 p-8 rounded-2xl">
+                    <div class="w-14 h-14 gradient-bg rounded-xl flex items-center justify-center mb-6">
+                        <i class="fa-solid fa-laptop-code text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3">Desarrollo Web</h3>
+                    <p class="text-gray-600 mb-4">Sitios web modernos, rápidos y optimizados para SEO que convierten visitantes en clientes.</p>
+                    <a href="#contacto" class="text-purple-600 font-semibold hover:text-purple-700">
+                        Saber más <i class="fa-solid fa-arrow-right ml-1"></i>
                     </a>
-                `;
+                </div>
+
+                <div class="card-hover bg-gradient-to-br from-pink-50 to-orange-50 p-8 rounded-2xl">
+                    <div class="w-14 h-14 bg-gradient-to-br from-pink-500 to-orange-500 rounded-xl flex items-center justify-center mb-6">
+                        <i class="fa-solid fa-palette text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3">Diseño UI/UX</h3>
+                    <p class="text-gray-600 mb-4">Interfaces intuitivas y atractivas que ofrecen experiencias de usuario memorables.</p>
+                    <a href="#contacto" class="text-pink-600 font-semibold hover:text-pink-700">
+                        Saber más <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+
+                <div class="card-hover bg-gradient-to-br from-blue-50 to-cyan-50 p-8 rounded-2xl">
+                    <div class="w-14 h-14 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center mb-6">
+                        <i class="fa-solid fa-chart-line text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3">Marketing Digital</h3>
+                    <p class="text-gray-600 mb-4">Estrategias de crecimiento que aumentan tu visibilidad y atraen más clientes.</p>
+                    <a href="#contacto" class="text-blue-600 font-semibold hover:text-blue-700">
+                        Saber más <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+
+                <div class="card-hover bg-gradient-to-br from-green-50 to-emerald-50 p-8 rounded-2xl">
+                    <div class="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mb-6">
+                        <i class="fa-solid fa-mobile-screen text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3">Apps Móviles</h3>
+                    <p class="text-gray-600 mb-4">Aplicaciones nativas e híbridas para iOS y Android con rendimiento excepcional.</p>
+                    <a href="#contacto" class="text-green-600 font-semibold hover:text-green-700">
+                        Saber más <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+
+                <div class="card-hover bg-gradient-to-br from-yellow-50 to-amber-50 p-8 rounded-2xl">
+                    <div class="w-14 h-14 bg-gradient-to-br from-yellow-500 to-amber-500 rounded-xl flex items-center justify-center mb-6">
+                        <i class="fa-solid fa-bullhorn text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3">Branding</h3>
+                    <p class="text-gray-600 mb-4">Identidad visual completa que comunica los valores únicos de tu marca.</p>
+                    <a href="#contacto" class="text-yellow-600 font-semibold hover:text-yellow-700">
+                        Saber más <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+
+                <div class="card-hover bg-gradient-to-br from-red-50 to-rose-50 p-8 rounded-2xl">
+                    <div class="w-14 h-14 bg-gradient-to-br from-red-500 to-rose-500 rounded-xl flex items-center justify-center mb-6">
+                        <i class="fa-solid fa-headset text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3">Soporte 24/7</h3>
+                    <p class="text-gray-600 mb-4">Mantenimiento continuo y soporte técnico cuando más lo necesites.</p>
+                    <a href="#contacto" class="text-red-600 font-semibold hover:text-red-700">
+                        Saber más <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Contacto -->
+    <section id="contacto" class="py-20 px-6 bg-gray-50">
+        <div class="container mx-auto">
+            <div class="grid lg:grid-cols-2 gap-12 items-start">
+                <div>
+                    <p class="text-sm font-semibold gradient-text uppercase tracking-wider mb-3">Contacto</p>
+                    <h2 class="text-4xl md:text-5xl font-bold mb-6">¿Listo para empezar tu proyecto?</h2>
+                    <p class="text-lg text-gray-600 mb-8">
+                        Cuéntanos sobre tu idea y nos pondremos en contacto contigo en menos de 24 horas. Estamos aquí para hacer realidad tu visión.
+                    </p>
+
+                    <div class="space-y-6">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 gradient-bg rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fa-solid fa-envelope text-white"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-900 mb-1">Email</p>
+                                <p class="text-gray-600">hola@novastudio.com</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 gradient-bg rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fa-solid fa-phone text-white"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-900 mb-1">Teléfono</p>
+                                <p class="text-gray-600">+34 900 123 456</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 gradient-bg rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fa-solid fa-location-dot text-white"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-900 mb-1">Ubicación</p>
+                                <p class="text-gray-600">Madrid, España</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4 mt-8">
+                        <a href="#" class="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-gray-600 hover:text-purple-600 hover:shadow-lg transition-all">
+                            <i class="fa-brands fa-twitter"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-gray-600 hover:text-purple-600 hover:shadow-lg transition-all">
+                            <i class="fa-brands fa-linkedin"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-gray-600 hover:text-purple-600 hover:shadow-lg transition-all">
+                            <i class="fa-brands fa-instagram"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-gray-600 hover:text-purple-600 hover:shadow-lg transition-all">
+                            <i class="fa-brands fa-dribbble"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="bg-white p-8 md:p-10 rounded-3xl shadow-xl">
+                    <form id="contact-form" class="space-y-6">
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Nombre</label>
+                                <input type="text" required
+                                       class="input-focus w-full px-4 py-3 border border-gray-200 rounded-xl outline-none transition-all"
+                                       placeholder="Juan Pérez">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+                                <input type="email" required
+                                       class="input-focus w-full px-4 py-3 border border-gray-200 rounded-xl outline-none transition-all"
+                                       placeholder="juan@ejemplo.com">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Asunto</label>
+                            <input type="text" required
+                                   class="input-focus w-full px-4 py-3 border border-gray-200 rounded-xl outline-none transition-all"
+                                   placeholder="¿En qué podemos ayudarte?">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Mensaje</label>
+                            <textarea rows="5" required
+                                      class="input-focus w-full px-4 py-3 border border-gray-200 rounded-xl outline-none transition-all resize-none"
+                                      placeholder="Cuéntanos sobre tu proyecto..."></textarea>
+                        </div>
+
+                        <div class="flex items-start">
+                            <input type="checkbox" id="terms" required class="mt-1 mr-3">
+                            <label for="terms" class="text-sm text-gray-600">
+                                Acepto la política de privacidad y los términos de servicio
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn-primary gradient-bg text-white w-full py-4 rounded-xl font-semibold">
+                            Enviar mensaje
+                            <i class="fa-solid fa-paper-plane ml-2"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-400 py-12 px-6">
+        <div class="container mx-auto">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="w-10 h-10 rounded-lg gradient-bg flex items-center justify-center">
+                            <i class="fa-solid fa-bolt text-white text-xl"></i>
+                        </div>
+                        <span class="text-xl font-bold text-white">Nova Studio</span>
+                    </div>
+                    <p class="text-sm">Diseñamos experiencias digitales que inspiran y convierten.</p>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Compañía</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-white transition">Sobre nosotros</a></li>
+                        <li><a href="#" class="hover:text-white transition">Carreras</a></li>
+                        <li><a href="#" class="hover:text-white transition">Blog</a></li>
+                        <li><a href="#contacto" class="hover:text-white transition">Contacto</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Servicios</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#servicios" class="hover:text-white transition">Diseño Web</a></li>
+                        <li><a href="#servicios" class="hover:text-white transition">Marketing</a></li>
+                        <li><a href="#servicios" class="hover:text-white transition">Branding</a></li>
+                        <li><a href="#servicios" class="hover:text-white transition">Consultoría</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-white font-semibold mb-4">Legal</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-white transition">Privacidad</a></li>
+                        <li><a href="#" class="hover:text-white transition">Términos</a></li>
+                        <li><a href="#" class="hover:text-white transition">Cookies</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-800 pt-8 text-center text-sm">
+                <p>&copy; 2024 Nova Studio. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Menú móvil
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+            const icon = mobileMenuBtn.querySelector('i');
+            icon.classList.toggle('fa-bars');
+            icon.classList.toggle('fa-xmark');
+        });
+
+        // Cerrar menú al hacer clic en un enlace
+        document.querySelectorAll('#mobile-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+                mobileMenuBtn.querySelector('i').classList.remove('fa-xmark');
+                mobileMenuBtn.querySelector('i').classList.add('fa-bars');
+            });
+        });
+
+        // Header con sombra al hacer scroll
+        const header = document.getElementById('header');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 20) {
+                header.classList.add('shadow-md');
+            } else {
+                header.classList.remove('shadow-md');
             }
         });
-    });
-</script>
 
+        // Formulario de contacto
+        const contactForm = document.getElementById('contact-form');
+        contactForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // Animación del botón
+            const btn = contactForm.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-check mr-2"></i>Mensaje enviado';
+            btn.classList.add('bg-green-500');
+            btn.classList.remove('gradient-bg');
+            
+            // Reset después de 3 segundos
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.classList.remove('bg-green-500');
+                btn.classList.add('gradient-bg');
+                contactForm.reset();
+            }, 3000);
+        });
 
+        // Animación al hacer scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.card-hover').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'all 0.6s ease-out';
+            observer.observe(el);
+        });
+    </script>
+<script>(function(){document.addEventListener("click",function(e){var a=e.target.closest("[data-product-id]");if(!a)return;e.preventDefault();var pid=a.getAttribute("data-product-id");if(pid)parent.postMessage({type:"ecto-artifact-link-click",productId:pid},"*")})})();</script>
 </body>
 </html>
-
